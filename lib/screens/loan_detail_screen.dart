@@ -1,0 +1,949 @@
+import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import '../models/loan.dart';
+import '../services/loan_calculator.dart';
+import 'prepayment_screen.dart';
+import 'graph_analysis_screen.dart';
+
+class LoanDetailScreen extends StatefulWidget {
+  final Loan loan;
+
+  const LoanDetailScreen({super.key, required this.loan});
+
+  @override
+  State<LoanDetailScreen> createState() => _LoanDetailScreenState();
+}
+
+class _LoanDetailScreenState extends State<LoanDetailScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  List<MonthlyPayment>? _paymentSchedule;
+  bool _isLoadingSchedule = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _loadPaymentSchedule();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadPaymentSchedule() async {
+    setState(() {
+      _isLoadingSchedule = true;
+    });
+
+    try {
+      _paymentSchedule = LoanCalculator.generatePaymentSchedule(widget.loan);
+    } catch (e) {
+      // 에러 처리
+      print('상환 스케줄 로드 오류: $e');
+    } finally {
+      setState(() {
+        _isLoadingSchedule = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.loan.name,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PrepaymentScreen(loan: widget.loan),
+                ),
+              );
+            },
+            icon: const Icon(Icons.payment),
+            tooltip: '중도금 상환',
+          ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: '기본 정보'),
+            Tab(text: '상환 스케줄'),
+            Tab(text: '차트 분석'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildBasicInfoTab(),
+          _buildScheduleTab(),
+          _buildChartTab(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBasicInfoTab() {
+    final now = DateTime.now();
+    final daysUntilStart = widget.loan.startDate.difference(now).inDays;
+    final isStarted = daysUntilStart <= 0;
+    final elapsedDays = isStarted ? widget.loan.getDaysSinceStart(now) : 0;
+    final remainingDays = isStarted 
+        ? widget.loan.getRemainingDays(now)
+        : widget.loan.termInMonths * 30;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // D-Day 상태 카드
+          _buildDDayStatusCard(daysUntilStart, isStarted, elapsedDays),
+          
+          const SizedBox(height: 16),
+          
+          // 기본 정보 카드
+          _buildBasicInfoCard(),
+          
+          const SizedBox(height: 16),
+          
+          // 상환 정보 카드
+          _buildRepaymentInfoCard(remainingDays),
+          
+          const SizedBox(height: 16),
+          
+          // 추가 정보 카드
+          _buildAdditionalInfoCard(),
+          
+          const SizedBox(height: 32),
+          
+          // 액션 버튼들
+          _buildActionButtons(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDDayStatusCard(int daysUntilStart, bool isStarted, int elapsedDays) {
+    Color statusColor;
+    IconData statusIcon;
+    String statusText;
+    String subtitle;
+
+    if (isStarted) {
+      statusColor = Colors.green;
+      statusIcon = Icons.play_arrow;
+      statusText = '진행 중';
+      subtitle = 'D-Day +$elapsedDays일';
+    } else if (daysUntilStart <= 7) {
+      statusColor = Colors.red;
+      statusIcon = Icons.warning;
+      statusText = '임박';
+      subtitle = 'D-Day까지 $daysUntilStart일';
+    } else if (daysUntilStart <= 30) {
+      statusColor = Colors.orange;
+      statusIcon = Icons.schedule;
+      statusText = '준비중';
+      subtitle = 'D-Day까지 $daysUntilStart일';
+    } else {
+      statusColor = Colors.blue;
+      statusIcon = Icons.schedule;
+      statusText = '대기중';
+      subtitle = 'D-Day까지 $daysUntilStart일';
+    }
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              statusColor.withOpacity(0.1),
+              statusColor.withOpacity(0.05),
+            ],
+          ),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(
+                  statusIcon,
+                  color: statusColor,
+                  size: 32,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        statusText,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: statusColor,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    isStarted ? '진행중' : 'D-$daysUntilStart',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatusItem(
+                  'D-Day',
+                  _formatDate(widget.loan.startDate),
+                  Icons.event,
+                  statusColor,
+                ),
+                _buildStatusItem(
+                  '대출 기간',
+                  '${widget.loan.termInMonths}개월',
+                  Icons.calendar_month,
+                  statusColor,
+                ),
+                _buildStatusItem(
+                  '상환 방식',
+                  widget.loan.repaymentType.displayName,
+                  Icons.payment,
+                  statusColor,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusItem(String label, String value, IconData icon, Color color) {
+    return Column(
+      children: [
+        Icon(
+          icon,
+          color: color,
+          size: 24,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBasicInfoCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.info,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  '기본 정보',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildInfoRow('대출명', widget.loan.name),
+            _buildInfoRow('대출금액', '${(widget.loan.amount / 10000).toStringAsFixed(1)}만원'),
+            _buildInfoRow('이율', '${widget.loan.interestRate}%'),
+            _buildInfoRow('대출 기간', '${widget.loan.termInMonths}개월'),
+            if (widget.loan.initialPayment != null && widget.loan.initialPayment! > 0)
+              _buildInfoRow('초기 납부금', '${(widget.loan.initialPayment! / 10000).toStringAsFixed(1)}만원'),
+            if (widget.loan.paymentDay != null)
+              _buildInfoRow('상환일', '매월 ${widget.loan.paymentDay}일'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRepaymentInfoCard(int remainingDays) {
+    final totalAmount = widget.loan.amount;
+    final monthlyPayment = _paymentSchedule?.isNotEmpty == true
+        ? _paymentSchedule!.first.totalPayment
+        : 0.0;
+    final totalInterest = _paymentSchedule?.isNotEmpty == true
+        ? _paymentSchedule!.fold(0.0, (sum, payment) => sum + payment.interest)
+        : 0.0;
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.payment,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  '상환 정보',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildRepaymentItem(
+                    '월 납부금',
+                    '${(monthlyPayment / 10000).toStringAsFixed(1)}만원',
+                    Icons.payment,
+                    Colors.blue,
+                  ),
+                ),
+                Expanded(
+                  child: _buildRepaymentItem(
+                    '총 이자',
+                    '${(totalInterest / 10000).toStringAsFixed(1)}만원',
+                    Icons.percent,
+                    Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildRepaymentItem(
+                    '총 상환금',
+                    '${((totalAmount + totalInterest) / 10000).toStringAsFixed(1)}만원',
+                    Icons.account_balance_wallet,
+                    Colors.green,
+                  ),
+                ),
+                Expanded(
+                  child: _buildRepaymentItem(
+                    '남은 기간',
+                    '${(remainingDays / 30).round()}개월',
+                    Icons.schedule,
+                    Colors.purple,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRepaymentItem(String label, String value, IconData icon, Color color) {
+    return Column(
+      children: [
+        Icon(
+          icon,
+          color: color,
+          size: 24,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdditionalInfoCard() {
+    final List<Widget> additionalItems = [];
+
+    if (widget.loan.initialPayment != null && widget.loan.initialPayment! > 0) {
+      additionalItems.add(_buildInfoRow('초기 납부금', '${(widget.loan.initialPayment! / 10000).toStringAsFixed(1)}만원'));
+    }
+
+    if (widget.loan.paymentDay != null) {
+      additionalItems.add(_buildInfoRow('상환일', '매월 ${widget.loan.paymentDay}일'));
+    }
+
+    if (additionalItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.more_horiz,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  '추가 정보',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            ...additionalItems,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PrepaymentScreen(loan: widget.loan),
+                ),
+              );
+            },
+            icon: const Icon(Icons.payment),
+            label: const Text(
+              '중도금 상환',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.all(16),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GraphAnalysisScreen(loan: widget.loan),
+                ),
+              );
+            },
+            icon: const Icon(Icons.analytics),
+            label: const Text(
+              '고급 그래프 분석',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.all(16),
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              // 대출 수정 기능 (추후 구현)
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('대출 수정 기능은 추후 업데이트 예정입니다.'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            },
+            icon: const Icon(Icons.edit),
+            label: const Text(
+              '대출 정보 수정',
+              style: TextStyle(fontSize: 16),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.all(16),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScheduleTab() {
+    if (_isLoadingSchedule) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (_paymentSchedule == null || _paymentSchedule!.isEmpty) {
+      return const Center(
+        child: Text('상환 스케줄을 불러올 수 없습니다.'),
+      );
+    }
+
+    return Column(
+      children: [
+        // 요약 정보
+        Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildSummaryItem(
+                '총 상환금',
+                '${(_paymentSchedule!.fold(0.0, (sum, payment) => sum + payment.totalPayment) / 10000).toStringAsFixed(1)}만원',
+                Icons.payment,
+                Colors.blue,
+              ),
+              _buildSummaryItem(
+                '총 이자',
+                '${(LoanCalculator.calculateTotalInterest(_paymentSchedule!) / 10000).toStringAsFixed(1)}만원',
+                Icons.percent,
+                Colors.orange,
+              ),
+              _buildSummaryItem(
+                '월 평균',
+                '${(_paymentSchedule!.fold(0.0, (sum, payment) => sum + payment.totalPayment) / _paymentSchedule!.length / 10000).toStringAsFixed(1)}만원',
+                Icons.trending_up,
+                Colors.green,
+              ),
+            ],
+          ),
+        ),
+        
+        // 상환 스케줄 테이블
+        Expanded(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                child: DataTable(
+                  columns: const [
+                    DataColumn(label: Text('월')),
+                    DataColumn(label: Text('납부일')),
+                    DataColumn(label: Text('원금')),
+                    DataColumn(label: Text('이자')),
+                    DataColumn(label: Text('총 납부금')),
+                    DataColumn(label: Text('잔액')),
+                  ],
+                  rows: _paymentSchedule!.map((payment) {
+                    return DataRow(
+                      cells: [
+                        DataCell(Text('${payment.month}')),
+                        DataCell(Text(_formatDate(payment.paymentDate))),
+                        DataCell(Text('${(payment.principal / 10000).toStringAsFixed(1)}만원')),
+                        DataCell(Text('${(payment.interest / 10000).toStringAsFixed(1)}만원')),
+                        DataCell(Text('${(payment.totalPayment / 10000).toStringAsFixed(1)}만원')),
+                        DataCell(Text('${(payment.remainingBalance / 10000).toStringAsFixed(1)}만원')),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildChartTab() {
+    if (_isLoadingSchedule || _paymentSchedule == null || _paymentSchedule!.isEmpty) {
+      return const Center(
+        child: Text('차트 데이터를 불러올 수 없습니다.'),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // 원금 vs 이자 비율 차트
+          _buildPieChart(),
+          
+          const SizedBox(height: 24),
+          
+          // 월별 납부금 추이 차트
+          _buildLineChart(),
+          
+          const SizedBox(height: 24),
+          
+          // 잔액 변화 차트
+          _buildBalanceChart(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPieChart() {
+    final totalPrincipal = _paymentSchedule!.fold(0.0, (sum, payment) => sum + payment.principal);
+    final totalInterest = _paymentSchedule!.fold(0.0, (sum, payment) => sum + payment.interest);
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '원금 vs 이자 비율',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 200,
+              child: PieChart(
+                PieChartData(
+                  sections: [
+                    PieChartSectionData(
+                      value: totalPrincipal,
+                      title: '원금\n${(totalPrincipal / 10000).toStringAsFixed(1)}만원',
+                      color: Colors.blue,
+                      radius: 80,
+                      titleStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    PieChartSectionData(
+                      value: totalInterest,
+                      title: '이자\n${(totalInterest / 10000).toStringAsFixed(1)}만원',
+                      color: Colors.orange,
+                      radius: 80,
+                      titleStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                  centerSpaceRadius: 40,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLineChart() {
+    final monthlyPayments = _paymentSchedule!.map((payment) => payment.totalPayment).toList();
+    final months = _paymentSchedule!.map((payment) => payment.month.toDouble()).toList();
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '월별 납부금 추이',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 200,
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(show: true),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 60,
+                        getTitlesWidget: (value, meta) {
+                          return Text('${(value / 10000).toStringAsFixed(0)}만원');
+                        },
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          return Text('${value.toInt()}월');
+                        },
+                      ),
+                    ),
+                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  borderData: FlBorderData(show: true),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: months.asMap().entries.map((entry) {
+                        return FlSpot(entry.value, monthlyPayments[entry.key]);
+                      }).toList(),
+                      isCurved: true,
+                      color: Colors.blue,
+                      barWidth: 3,
+                      dotData: FlDotData(show: true),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBalanceChart() {
+    final balances = _paymentSchedule!.map((payment) => payment.remainingBalance).toList();
+    final months = _paymentSchedule!.map((payment) => payment.month.toDouble()).toList();
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '잔액 변화',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 200,
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(show: true),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 60,
+                        getTitlesWidget: (value, meta) {
+                          return Text('${(value / 10000).toStringAsFixed(0)}만원');
+                        },
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          return Text('${value.toInt()}월');
+                        },
+                      ),
+                    ),
+                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  borderData: FlBorderData(show: true),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: months.asMap().entries.map((entry) {
+                        return FlSpot(entry.value, balances[entry.key]);
+                      }).toList(),
+                      isCurved: true,
+                      color: Colors.green,
+                      barWidth: 3,
+                      dotData: FlDotData(show: true),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryItem(String title, String value, IconData icon, Color color) {
+    return Column(
+      children: [
+        Icon(
+          icon,
+          color: color,
+          size: 24,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.month}월 ${date.day}일';
+  }
+}
