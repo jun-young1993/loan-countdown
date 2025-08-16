@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_common/constants/juny_constants.dart';
+import 'package:flutter_common/flutter_common.dart';
 import 'package:flutter_common/network/dio_client.dart';
 import 'package:flutter_common/providers/index.dart';
 import 'package:flutter_common/repositories/app_repository.dart';
@@ -16,7 +17,9 @@ import 'package:flutter_common/state/notice_group/notice_group_bloc.dart';
 import 'package:flutter_common/state/notice_reply/notice_reply_bloc.dart';
 import 'package:flutter_common/state/user/user_bloc.dart';
 import 'package:flutter_common/state/verification/verification_bloc.dart';
+import 'package:flutter_common/state/verification/verification_listener.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:loan_countdown/repositorys/loan_repository.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'models/loan.dart';
@@ -26,6 +29,9 @@ import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final adMaster = AdMaster();
+  await adMaster.initialize(AdConfig());
 
   // Hive 초기화
   await Hive.initFlutter();
@@ -44,12 +50,19 @@ void main() async {
   // 알림 서비스 초기화
   await NotificationService().initialize();
 
+  await EasyLocalization.ensureInitialized();
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    debugPrint('[FLUTTER ERROR] ${details.exception}');
+    debugPrint('[STACKTRACE] ${details.stack}');
+  };
+
   final sharedPreferences = await SharedPreferences.getInstance();
 
   DioClient dioClient = DioClient(
     baseUrl: JunyConstants.apiBaseUrl,
-    debugBaseUrl: JunyConstants.apiBaseUrl,
-    useLogInterceptor: false,
+    debugBaseUrl: 'http://localhost:3000',
+    useLogInterceptor: true,
   );
 
   runApp(
@@ -82,6 +95,9 @@ void main() async {
         RepositoryProvider<NoticeReplyRepository>(
           create: (context) =>
               NoticeReplyDefaultRepository(dioClient: dioClient),
+        ),
+        RepositoryProvider<LoanRepository>(
+          create: (context) => LoanDefaultRepository(dioClient: dioClient),
         ),
       ],
       child: MultiBlocProvider(
@@ -119,7 +135,16 @@ void main() async {
             ),
           ),
         ],
-        child: const MyApp(),
+        child: Builder(
+          builder: (context) {
+            return EasyLocalization(
+              supportedLocales: const [Locale('ko'), Locale('en')],
+              path: 'packages/flutter_common/assets/translations',
+              fallbackLocale: const Locale('ko'),
+              child: const MyApp(),
+            );
+          },
+        ),
       ),
     ),
   );
@@ -132,14 +157,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => LoanProvider(),
+      create: (context) => LoanProvider(
+        loanRepository: context.read<LoanRepository>(),
+        userRepository: context.read<UserRepository>(),
+      ),
       child: MaterialApp(
         title: '대출 D-Day & 상환 추적',
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,
         ),
-        home: const HomeScreen(),
+        home: MultiBlocListener(
+          listeners: [VerificationListener(), NoticeListener()],
+          child: const HomeScreen(),
+        ),
         debugShowCheckedModeBanner: false,
       ),
     );

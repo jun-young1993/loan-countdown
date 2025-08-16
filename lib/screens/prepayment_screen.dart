@@ -162,7 +162,7 @@ class _PrepaymentScreenState extends State<PrepaymentScreen> {
                   firstDate: DateTime.now(),
                   lastDate: DateTime(
                     widget.loan.startDate.year,
-                    widget.loan.startDate.month + widget.loan.termInMonths,
+                    widget.loan.startDate.month + widget.loan.term,
                     widget.loan.startDate.day,
                   ),
                 );

@@ -19,7 +19,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   List<MonthlyPayment>? _prepaymentSchedule;
   bool _isLoading = false;
   double _prepaymentAmount = 0.0;
-  DateTime _prepaymentDate = DateTime.now();
+  final DateTime _prepaymentDate = DateTime.now();
   PrepaymentType _prepaymentType = PrepaymentType.reduceAmount;
 
   @override
@@ -116,9 +116,15 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
     }
 
     final monthlyData = _originalSchedule!;
-    final principalData = monthlyData.map((payment) => payment.principal).toList();
-    final interestData = monthlyData.map((payment) => payment.interest).toList();
-    final months = monthlyData.map((payment) => payment.month.toDouble()).toList();
+    final principalData = monthlyData
+        .map((payment) => payment.principal)
+        .toList();
+    final interestData = monthlyData
+        .map((payment) => payment.interest)
+        .toList();
+    final months = monthlyData
+        .map((payment) => payment.month.toDouble())
+        .toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -126,19 +132,19 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
         children: [
           // 요약 정보
           _buildSummaryCard(),
-          
+
           const SizedBox(height: 24),
-          
+
           // 원금 vs 이자 스택 차트
           _buildStackedAreaChart(months, principalData, interestData),
-          
+
           const SizedBox(height: 24),
-          
+
           // 원금 vs 이자 비율 파이 차트
           _buildPieChart(),
-          
+
           const SizedBox(height: 24),
-          
+
           // 월별 원금/이자 바 차트
           _buildBarChart(months, principalData, interestData),
         ],
@@ -152,8 +158,12 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
     }
 
     final monthlyData = _originalSchedule!;
-    final totalPayments = monthlyData.map((payment) => payment.totalPayment).toList();
-    final months = monthlyData.map((payment) => payment.month.toDouble()).toList();
+    final totalPayments = monthlyData
+        .map((payment) => payment.totalPayment)
+        .toList();
+    final months = monthlyData
+        .map((payment) => payment.month.toDouble())
+        .toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -161,14 +171,14 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
         children: [
           // 납부금 통계
           _buildPaymentStatsCard(),
-          
+
           const SizedBox(height: 24),
-          
+
           // 월별 납부금 라인 차트
           _buildLineChart(months, totalPayments, '월별 납부금 추이'),
-          
+
           const SizedBox(height: 24),
-          
+
           // 납부금 분포 히스토그램
           _buildHistogram(totalPayments),
         ],
@@ -182,8 +192,12 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
     }
 
     final monthlyData = _originalSchedule!;
-    final balances = monthlyData.map((payment) => payment.remainingBalance).toList();
-    final months = monthlyData.map((payment) => payment.month.toDouble()).toList();
+    final balances = monthlyData
+        .map((payment) => payment.remainingBalance)
+        .toList();
+    final months = monthlyData
+        .map((payment) => payment.month.toDouble())
+        .toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -191,14 +205,14 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
         children: [
           // 잔액 통계
           _buildBalanceStatsCard(),
-          
+
           const SizedBox(height: 24),
-          
+
           // 잔액 변화 라인 차트
           _buildLineChart(months, balances, '잔액 변화'),
-          
+
           const SizedBox(height: 24),
-          
+
           // 상환 진행률 게이지
           _buildProgressGauge(),
         ],
@@ -217,9 +231,9 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
         children: [
           // 중도금 상환 입력 폼
           _buildPrepaymentInputForm(),
-          
+
           const SizedBox(height: 24),
-          
+
           // 비교 차트
           if (_prepaymentSchedule != null) ...[
             _buildComparisonChart(),
@@ -234,15 +248,19 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   }
 
   Widget _buildSummaryCard() {
-    final totalPrincipal = _originalSchedule!.fold(0.0, (sum, payment) => sum + payment.principal);
-    final totalInterest = _originalSchedule!.fold(0.0, (sum, payment) => sum + payment.interest);
+    final totalPrincipal = _originalSchedule!.fold(
+      0.0,
+      (sum, payment) => sum + payment.principal,
+    );
+    final totalInterest = _originalSchedule!.fold(
+      0.0,
+      (sum, payment) => sum + payment.interest,
+    );
     final totalPayment = totalPrincipal + totalInterest;
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -250,10 +268,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
           children: [
             const Text(
               '원금 vs 이자 요약',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Row(
@@ -290,14 +305,15 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
     );
   }
 
-  Widget _buildSummaryItem(String label, String value, IconData icon, Color color) {
+  Widget _buildSummaryItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
       children: [
-        Icon(
-          icon,
-          color: color,
-          size: 24,
-        ),
+        Icon(icon, color: color, size: 24),
         const SizedBox(height: 8),
         Text(
           value,
@@ -310,22 +326,21 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
         ),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
           textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  Widget _buildStackedAreaChart(List<double> months, List<double> principalData, List<double> interestData) {
+  Widget _buildStackedAreaChart(
+    List<double> months,
+    List<double> principalData,
+    List<double> interestData,
+  ) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -333,10 +348,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
           children: [
             const Text(
               '원금 vs 이자 스택 차트',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -350,7 +362,9 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                         showTitles: true,
                         reservedSize: 60,
                         getTitlesWidget: (value, meta) {
-                          return Text('${(value / 10000).toStringAsFixed(0)}만원');
+                          return Text(
+                            '${(value / 10000).toStringAsFixed(0)}만원',
+                          );
                         },
                       ),
                     ),
@@ -362,8 +376,12 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                         },
                       ),
                     ),
-                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   borderData: FlBorderData(show: true),
                   lineBarsData: [
@@ -404,14 +422,18 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   }
 
   Widget _buildPieChart() {
-    final totalPrincipal = _originalSchedule!.fold(0.0, (sum, payment) => sum + payment.principal);
-    final totalInterest = _originalSchedule!.fold(0.0, (sum, payment) => sum + payment.interest);
+    final totalPrincipal = _originalSchedule!.fold(
+      0.0,
+      (sum, payment) => sum + payment.principal,
+    );
+    final totalInterest = _originalSchedule!.fold(
+      0.0,
+      (sum, payment) => sum + payment.interest,
+    );
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -419,10 +441,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
           children: [
             const Text(
               '원금 vs 이자 비율',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -432,7 +451,8 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                   sections: [
                     PieChartSectionData(
                       value: totalPrincipal,
-                      title: '원금\n${(totalPrincipal / 10000).toStringAsFixed(1)}만원',
+                      title:
+                          '원금\n${(totalPrincipal / 10000).toStringAsFixed(1)}만원',
                       color: Colors.blue,
                       radius: 80,
                       titleStyle: const TextStyle(
@@ -443,7 +463,8 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                     ),
                     PieChartSectionData(
                       value: totalInterest,
-                      title: '이자\n${(totalInterest / 10000).toStringAsFixed(1)}만원',
+                      title:
+                          '이자\n${(totalInterest / 10000).toStringAsFixed(1)}만원',
                       color: Colors.orange,
                       radius: 80,
                       titleStyle: const TextStyle(
@@ -463,12 +484,14 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
     );
   }
 
-  Widget _buildBarChart(List<double> months, List<double> principalData, List<double> interestData) {
+  Widget _buildBarChart(
+    List<double> months,
+    List<double> principalData,
+    List<double> interestData,
+  ) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -476,10 +499,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
           children: [
             const Text(
               '월별 원금/이자 바 차트',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -495,7 +515,9 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                         showTitles: true,
                         reservedSize: 60,
                         getTitlesWidget: (value, meta) {
-                          return Text('${(value / 10000).toStringAsFixed(0)}만원');
+                          return Text(
+                            '${(value / 10000).toStringAsFixed(0)}만원',
+                          );
                         },
                       ),
                     ),
@@ -507,8 +529,12 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                         },
                       ),
                     ),
-                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   borderData: FlBorderData(show: true),
                   barGroups: months.asMap().entries.map((entry) {
@@ -539,16 +565,17 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   }
 
   Widget _buildPaymentStatsCard() {
-    final totalPayments = _originalSchedule!.map((payment) => payment.totalPayment).toList();
-    final avgPayment = totalPayments.reduce((a, b) => a + b) / totalPayments.length;
+    final totalPayments = _originalSchedule!
+        .map((payment) => payment.totalPayment)
+        .toList();
+    final avgPayment =
+        totalPayments.reduce((a, b) => a + b) / totalPayments.length;
     final maxPayment = totalPayments.reduce((a, b) => a > b ? a : b);
     final minPayment = totalPayments.reduce((a, b) => a < b ? a : b);
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -556,10 +583,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
           children: [
             const Text(
               '납부금 통계',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Row(
@@ -599,9 +623,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   Widget _buildLineChart(List<double> months, List<double> data, String title) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -609,10 +631,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -626,7 +645,9 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                         showTitles: true,
                         reservedSize: 60,
                         getTitlesWidget: (value, meta) {
-                          return Text('${(value / 10000).toStringAsFixed(0)}만원');
+                          return Text(
+                            '${(value / 10000).toStringAsFixed(0)}만원',
+                          );
                         },
                       ),
                     ),
@@ -638,8 +659,12 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                         },
                       ),
                     ),
-                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   borderData: FlBorderData(show: true),
                   lineBarsData: [
@@ -666,7 +691,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
     // 간단한 히스토그램 구현
     final buckets = <String, int>{};
     final bucketSize = 1000000; // 100만원 단위
-    
+
     for (final value in data) {
       final bucket = (value / bucketSize).floor() * bucketSize;
       final bucketKey = '${(bucket / 10000).toStringAsFixed(0)}만원';
@@ -675,9 +700,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -685,10 +708,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
           children: [
             const Text(
               '납부금 분포',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -720,8 +740,12 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                         },
                       ),
                     ),
-                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   borderData: FlBorderData(show: true),
                   barGroups: buckets.entries.map((entry) {
@@ -747,16 +771,16 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   }
 
   Widget _buildBalanceStatsCard() {
-    final balances = _originalSchedule!.map((payment) => payment.remainingBalance).toList();
+    final balances = _originalSchedule!
+        .map((payment) => payment.remainingBalance)
+        .toList();
     final initialBalance = balances.first;
     final finalBalance = balances.last;
     final avgBalance = balances.reduce((a, b) => a + b) / balances.length;
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -764,10 +788,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
           children: [
             const Text(
               '잔액 통계',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Row(
@@ -805,15 +826,14 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   }
 
   Widget _buildProgressGauge() {
-    final totalMonths = widget.loan.termInMonths;
-    final currentMonth = DateTime.now().difference(widget.loan.startDate).inDays / 30;
+    final totalMonths = widget.loan.term;
+    final currentMonth =
+        DateTime.now().difference(widget.loan.startDate).inDays / 30;
     final progress = (currentMonth / totalMonths).clamp(0.0, 1.0);
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -821,10 +841,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
           children: [
             const Text(
               '상환 진행률',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Center(
@@ -852,10 +869,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                   ),
                   Text(
                     '${currentMonth.round()}개월 / $totalMonths개월',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -869,9 +883,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   Widget _buildPrepaymentInputForm() {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -879,10 +891,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
           children: [
             const Text(
               '중도금 상환 시나리오',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             TextFormField(
@@ -907,10 +916,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                 prefixIcon: Icon(Icons.payment),
               ),
               items: PrepaymentType.values.map((type) {
-                return DropdownMenuItem(
-                  value: type,
-                  child: Text(type.name),
-                );
+                return DropdownMenuItem(value: type, child: Text(type.name));
               }).toList(),
               onChanged: (value) {
                 setState(() {
@@ -922,7 +928,9 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _prepaymentAmount > 0 ? _calculatePrepaymentScenario : null,
+                onPressed: _prepaymentAmount > 0
+                    ? _calculatePrepaymentScenario
+                    : null,
                 child: const Text('시나리오 계산'),
               ),
             ),
@@ -935,15 +943,17 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   Widget _buildComparisonChart() {
     if (_prepaymentSchedule == null) return const SizedBox.shrink();
 
-    final originalPayments = _originalSchedule!.map((p) => p.totalPayment).toList();
-    final prepaymentPayments = _prepaymentSchedule!.map((p) => p.totalPayment).toList();
+    final originalPayments = _originalSchedule!
+        .map((p) => p.totalPayment)
+        .toList();
+    final prepaymentPayments = _prepaymentSchedule!
+        .map((p) => p.totalPayment)
+        .toList();
     final months = _originalSchedule!.map((p) => p.month.toDouble()).toList();
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -951,10 +961,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
           children: [
             const Text(
               '원본 vs 중도금 상환 비교',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -968,7 +975,9 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                         showTitles: true,
                         reservedSize: 60,
                         getTitlesWidget: (value, meta) {
-                          return Text('${(value / 10000).toStringAsFixed(0)}만원');
+                          return Text(
+                            '${(value / 10000).toStringAsFixed(0)}만원',
+                          );
                         },
                       ),
                     ),
@@ -980,8 +989,12 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                         },
                       ),
                     ),
-                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   borderData: FlBorderData(show: true),
                   lineBarsData: [
@@ -996,7 +1009,10 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
                     ),
                     LineChartBarData(
                       spots: months.asMap().entries.map((entry) {
-                        return FlSpot(entry.value, prepaymentPayments[entry.key]);
+                        return FlSpot(
+                          entry.value,
+                          prepaymentPayments[entry.key],
+                        );
                       }).toList(),
                       isCurved: true,
                       color: Colors.green,
@@ -1010,19 +1026,11 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
             const SizedBox(height: 16),
             Row(
               children: [
-                Container(
-                  width: 16,
-                  height: 16,
-                  color: Colors.blue,
-                ),
+                Container(width: 16, height: 16, color: Colors.blue),
                 const SizedBox(width: 8),
                 const Text('원본 상환'),
                 const SizedBox(width: 24),
-                Container(
-                  width: 16,
-                  height: 16,
-                  color: Colors.green,
-                ),
+                Container(width: 16, height: 16, color: Colors.green),
                 const SizedBox(width: 8),
                 const Text('중도금 상환 후'),
               ],
@@ -1036,15 +1044,19 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   Widget _buildSavingsAnalysisCard() {
     if (_prepaymentSchedule == null) return const SizedBox.shrink();
 
-    final originalTotal = _originalSchedule!.fold(0.0, (sum, p) => sum + p.totalPayment);
-    final prepaymentTotal = _prepaymentSchedule!.fold(0.0, (sum, p) => sum + p.totalPayment);
+    final originalTotal = _originalSchedule!.fold(
+      0.0,
+      (sum, p) => sum + p.totalPayment,
+    );
+    final prepaymentTotal = _prepaymentSchedule!.fold(
+      0.0,
+      (sum, p) => sum + p.totalPayment,
+    );
     final savings = originalTotal - prepaymentTotal;
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -1052,10 +1064,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
           children: [
             const Text(
               '절약 효과 분석',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Row(
@@ -1095,34 +1104,22 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   Widget _buildNoPrepaymentCard() {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Icon(
-              Icons.analytics,
-              size: 64,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.analytics, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               '중도금 상환 시나리오를 입력하세요',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               '상환 금액과 방식을 선택하면\n절약 효과를 분석할 수 있습니다',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
           ],

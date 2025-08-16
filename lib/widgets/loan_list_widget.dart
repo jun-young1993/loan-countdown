@@ -12,9 +12,7 @@ class LoanListWidget extends StatelessWidget {
     return Consumer<LoanProvider>(
       builder: (context, loanProvider, child) {
         if (loanProvider.loans.isEmpty) {
-          return const Center(
-            child: Text('등록된 대출이 없습니다'),
-          );
+          return const Center(child: Text('등록된 대출이 없습니다'));
         }
 
         return ListView.builder(
@@ -32,7 +30,7 @@ class LoanListWidget extends StatelessWidget {
   Widget _buildLoanCard(BuildContext context, Loan loan) {
     DateTime now = DateTime.now();
     bool isExpired = loan.startDate.isBefore(now);
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
@@ -84,7 +82,7 @@ class LoanListWidget extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              
+
               Row(
                 children: [
                   Expanded(
@@ -104,14 +102,14 @@ class LoanListWidget extends StatelessWidget {
                   Expanded(
                     child: _buildInfoItem(
                       '기간',
-                      '${loan.termInMonths}개월',
+                      '${loan.term}개월',
                       Icons.schedule,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              
+
               Row(
                 children: [
                   Expanded(
@@ -131,7 +129,7 @@ class LoanListWidget extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              
+
               // D-Day 상태 표시
               _buildDDayStatus(loan),
             ],
@@ -147,28 +145,18 @@ class LoanListWidget extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
-              icon,
-              size: 16,
-              color: Colors.grey[600],
-            ),
+            Icon(icon, size: 16, color: Colors.grey[600]),
             const SizedBox(width: 4),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
           ],
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -177,7 +165,7 @@ class LoanListWidget extends StatelessWidget {
   Widget _buildDDayStatus(Loan loan) {
     DateTime now = DateTime.now();
     Duration difference = loan.startDate.difference(now);
-    
+
     if (difference.isNegative) {
       // D-Day가 이미 지난 경우
       int daysSinceStart = loan.getDaysSinceStart(now);
@@ -190,11 +178,7 @@ class LoanListWidget extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.check_circle,
-              color: Colors.green,
-              size: 20,
-            ),
+            Icon(Icons.check_circle, color: Colors.green, size: 20),
             const SizedBox(width: 8),
             Text(
               'D-Day +${daysSinceStart}일 (진행중)',
@@ -210,7 +194,7 @@ class LoanListWidget extends StatelessWidget {
       // D-Day까지 남은 경우
       int days = difference.inDays;
       int hours = difference.inHours % 24;
-      
+
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -220,11 +204,7 @@ class LoanListWidget extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.schedule,
-              color: Colors.orange,
-              size: 20,
-            ),
+            Icon(Icons.schedule, color: Colors.orange, size: 20),
             const SizedBox(width: 8),
             Text(
               'D-Day까지 ${days}일 ${hours}시간 남음',

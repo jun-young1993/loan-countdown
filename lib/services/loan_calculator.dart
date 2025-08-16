@@ -5,7 +5,7 @@ class LoanCalculator {
   static double calculateEqualInstallment(Loan loan) {
     double principal = loan.amount;
     double monthlyRate = loan.interestRate / 100 / 12;
-    int totalMonths = loan.termInMonths;
+    int totalMonths = loan.term;
 
     if (monthlyRate == 0) {
       return principal / totalMonths;
@@ -22,13 +22,17 @@ class LoanCalculator {
   /// 원금 균등 상환 계산
   static double calculateEqualPrincipal(Loan loan) {
     double principal = loan.amount;
-    int totalMonths = loan.termInMonths;
+    int totalMonths = loan.term;
 
     return principal / totalMonths;
   }
 
   /// 월별 상환 스케줄 생성
-  static List<MonthlyPayment> generatePaymentSchedule(Loan loan) {
+  static List<MonthlyPayment> generatePaymentSchedule(
+    Loan loan, {
+    int startMonth = 1,
+    int limit = 100,
+  }) {
     List<MonthlyPayment> schedule = [];
     double remainingPrincipal = loan.amount;
     double monthlyRate = loan.interestRate / 100 / 12;
@@ -37,12 +41,13 @@ class LoanCalculator {
       case RepaymentType.equalInstallment:
         double monthlyPayment = calculateEqualInstallment(loan);
 
-        for (int month = 1; month <= loan.termInMonths; month++) {
+        for (int month = startMonth; month <= limit; month++) {
           double interest = remainingPrincipal * monthlyRate;
           double principal = monthlyPayment - interest;
 
-          if (month == loan.termInMonths) {
+          if (month == loan.term) {
             principal = remainingPrincipal; // 마지막 달에는 남은 원금 모두 상환
+            break;
           }
 
           remainingPrincipal -= principal;
@@ -67,12 +72,15 @@ class LoanCalculator {
       case RepaymentType.equalPrincipal:
         double monthlyPrincipal = calculateEqualPrincipal(loan);
 
-        for (int month = 1; month <= loan.termInMonths; month++) {
+        for (int month = startMonth; month <= limit; month++) {
           double interest = remainingPrincipal * monthlyRate;
           double totalPayment = monthlyPrincipal + interest;
 
           remainingPrincipal -= monthlyPrincipal;
 
+          if (month == loan.term) {
+            break;
+          }
           schedule.add(
             MonthlyPayment(
               month: month,
@@ -91,15 +99,14 @@ class LoanCalculator {
         break;
 
       case RepaymentType.bulletPayment:
-        for (int month = 1; month <= loan.termInMonths; month++) {
+        for (int month = startMonth; month <= limit; month++) {
           double interest = remainingPrincipal * monthlyRate;
-          double principal = month == loan.termInMonths
-              ? remainingPrincipal
-              : 0;
+          double principal = month == loan.term ? remainingPrincipal : 0;
           double totalPayment = interest + principal;
 
-          if (month == loan.termInMonths) {
+          if (month == loan.term) {
             remainingPrincipal = 0;
+            break;
           }
 
           schedule.add(
@@ -158,7 +165,7 @@ class LoanCalculator {
     // 새로운 대출 조건으로 재계산
     Loan newLoan = loan.copyWith(
       amount: remainingPrincipal,
-      termInMonths: remainingMonths,
+      term: remainingMonths,
       startDate: prepaymentDate,
     );
 

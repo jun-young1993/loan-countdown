@@ -1,24 +1,36 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_common/models/user/user.dart';
+import 'package:flutter_common/repositories/user_repository.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:loan_countdown/repositorys/loan_repository.dart';
 import '../models/loan.dart';
 
 class LoanProvider extends ChangeNotifier {
   late Box<Loan> _loanBox;
   List<Loan> _loans = [];
-
+  final LoanRepository _loanRepository;
+  final UserRepository _userRepository;
   List<Loan> get loans => _loans;
+
+  LoanProvider({
+    required LoanRepository loanRepository,
+    required UserRepository userRepository,
+  }) : _loanRepository = loanRepository,
+       _userRepository = userRepository;
 
   // Hive 박스 초기화
   Future<void> initializeBox() async {
     _loanBox = Hive.box<Loan>('loans');
+
     await _loadLoans();
   }
 
   // 대출 목록 로드
   Future<void> _loadLoans() async {
     try {
-      _loans = _loanBox.values.toList();
-      _loans.sort((a, b) => a.startDate.compareTo(b.startDate));
+      final user = await _userRepository.getUserInfo();
+      _loans = await _loanRepository.findAll(user);
+
       notifyListeners();
     } catch (e) {
       if (kDebugMode) {
@@ -30,7 +42,8 @@ class LoanProvider extends ChangeNotifier {
   // 대출 추가
   Future<void> addLoan(Loan loan) async {
     try {
-      await _loanBox.add(loan);
+      final user = await _userRepository.getUserInfo();
+      await _loanRepository.addLoan(loan, user);
       await _loadLoans();
     } catch (e) {
       if (kDebugMode) {
@@ -43,6 +56,7 @@ class LoanProvider extends ChangeNotifier {
   Future<void> updateLoan(Loan loan) async {
     try {
       await loan.save();
+
       await _loadLoans();
     } catch (e) {
       if (kDebugMode) {
@@ -97,7 +111,7 @@ class LoanProvider extends ChangeNotifier {
     return _loans.where((loan) {
       DateTime endDate = DateTime(
         loan.startDate.year,
-        loan.startDate.month + loan.termInMonths,
+        loan.startDate.month + loan.term,
         loan.startDate.day,
       );
       return endDate.isBefore(now);
@@ -110,7 +124,7 @@ class LoanProvider extends ChangeNotifier {
     return _loans.where((loan) {
       DateTime endDate = DateTime(
         loan.startDate.year,
-        loan.startDate.month + loan.termInMonths,
+        loan.startDate.month + loan.term,
         loan.startDate.day,
       );
       return endDate.isAfter(now);

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_common/models/user/user.dart';
 import 'package:provider/provider.dart';
 import '../providers/loan_provider.dart';
 import '../models/loan.dart';
 
 class AddLoanScreen extends StatefulWidget {
-  const AddLoanScreen({super.key});
+  final User user;
+  const AddLoanScreen({super.key, required this.user});
 
   @override
   State<AddLoanScreen> createState() => _AddLoanScreenState();
@@ -380,7 +382,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
           name: _nameController.text.trim(),
           amount: double.parse(_amountController.text.replaceAll(',', '')),
           interestRate: double.parse(_interestRateController.text),
-          termInMonths: int.parse(_termController.text),
+          term: int.parse(_termController.text),
           startDate: _selectedDate,
           repaymentType: _selectedRepaymentType,
           initialPayment: _initialPaymentController.text.isNotEmpty

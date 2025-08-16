@@ -1,4 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_common/state/user/user_bloc.dart';
+import 'package:flutter_common/state/user/user_event.dart';
+import 'package:flutter_common/state/user/user_selector.dart';
+import 'package:flutter_common/widgets/ad/ad_master.dart';
+import 'package:flutter_common/widgets/ad/ad_open_app.dart';
+import 'package:flutter_common/widgets/layout/notice_screen_layout.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:loan_countdown/screens/add_loan_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/loan_provider.dart';
 import '../models/loan.dart';
@@ -18,14 +28,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   String _selectedSortBy = 'dday';
   bool _isLoading = true;
+  UserBloc get userBloc => context.read<UserBloc>();
+  bool isFloatingActionButtonVisible = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    userBloc.add(const UserEvent.initialize());
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      setState(() {
+        isFloatingActionButtonVisible = _tabController.index < 3;
+      });
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeProvider();
     });
+
+    AdOpenApp(
+      adMaster: AdMaster(),
+      adUnitId: Platform.isAndroid
+          ? 'ca-app-pub-4656262305566191/7156139470'
+          : 'ca-app-pub-4656262305566191/7323648092',
+    ).listenToAppStateChanges();
   }
 
   @override
@@ -121,10 +146,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
+          tabs: [
             Tab(text: '홈'),
             Tab(text: '대출 목록'),
             Tab(text: '통계'),
+            Tab(text: '커뮤니티'),
           ],
         ),
       ),
@@ -136,9 +162,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 _buildHomeTab(),
                 _buildLoanListTab(),
                 _buildStatsTab(),
+                UserInfoSelector((user) {
+                  if (user == null) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  return NoticeScreenLayout(
+                    groupName: 'parking-zone-code-02782',
+                    user: user,
+                    detailAd: AdMasterWidget(
+                      adType: AdType.banner,
+                      adUnitId: 'ca-app-pub-4656262305566191/8099310198',
+                      androidAdUnitId: 'ca-app-pub-4656262305566191/7046079402',
+                      builder: (state, ad) {
+                        return state.isLoaded && ad != null
+                            ? AdWidget(ad: ad)
+                            : const Text('ad loading...');
+                      },
+                    ),
+                  );
+                }),
               ],
             ),
-      floatingActionButton: const AddLoanButton(),
+      floatingActionButton: UserInfoSelector((user) {
+        if (user == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return isFloatingActionButtonVisible
+            ? AddLoanButton(user: user)
+            : const SizedBox.shrink();
+      }),
     );
   }
 
@@ -160,10 +212,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Column(
               children: [
                 // D-Day 위젯
-                const LoanDDayWidget(),
+                LoanDDayWidget(loans: loans),
 
-                // 빠른 액션 카드
-                _buildQuickActionsCard(),
+                // // 빠른 액션 카드
+                // _buildQuickActionsCard(),
 
                 // 요약 통계
                 _buildSummaryStatsCard(loanProvider),
@@ -261,24 +313,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: () {
-              // FAB 클릭 효과
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('오른쪽 하단의 + 버튼을 눌러주세요!'),
-                  duration: Duration(seconds: 2),
+          UserInfoSelector((user) {
+            if (user == null) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return ElevatedButton.icon(
+              onPressed: () {
+                // FAB 클릭 효과
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddLoanScreen(user: user),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('첫 번째 대출 추가하기'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
                 ),
-              );
-            },
-            icon: const Icon(Icons.add),
-            label: const Text('첫 번째 대출 추가하기'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Colors.white,
-            ),
-          ),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Colors.white,
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -784,7 +844,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
               Text(
-                '${loan.termInMonths}개월',
+                '${loan.term}개월',
                 style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
             ],

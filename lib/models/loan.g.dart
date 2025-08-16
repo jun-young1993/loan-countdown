@@ -21,7 +21,7 @@ class LoanAdapter extends TypeAdapter<Loan> {
       name: fields[1] as String,
       amount: fields[2] as double,
       interestRate: fields[3] as double,
-      termInMonths: fields[4] as int,
+      term: fields[4] as int,
       startDate: fields[5] as DateTime,
       repaymentType: fields[6] as RepaymentType,
       initialPayment: fields[7] as double?,
@@ -45,7 +45,7 @@ class LoanAdapter extends TypeAdapter<Loan> {
       ..writeByte(3)
       ..write(obj.interestRate)
       ..writeByte(4)
-      ..write(obj.termInMonths)
+      ..write(obj.term)
       ..writeByte(5)
       ..write(obj.startDate)
       ..writeByte(6)
