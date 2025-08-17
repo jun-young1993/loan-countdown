@@ -39,6 +39,8 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+
+    _fetchPaymentSchedule();
   }
 
   @override
@@ -46,6 +48,13 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
     _tabController.dispose();
     _pagingController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchPaymentSchedule() async {
+    _paymentSchedule = LoanCalculator.generatePaymentSchedule(
+      widget.loan,
+      limit: widget.loan.term,
+    );
   }
 
   @override
@@ -601,7 +610,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                 _paymentSchedule?.isNotEmpty == true
                     ? '${(LoanCalculator.calculateTotalInterest(_paymentSchedule!) / 10000).toStringAsFixed(1)}만원'
                     : '계산 중...',
-                Icons.percent,
+                Icons.trending_up,
                 Colors.orange,
               ),
               _buildSummaryItem(
@@ -609,7 +618,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                 _paymentSchedule?.isNotEmpty == true
                     ? '${(_paymentSchedule!.fold(0.0, (sum, payment) => sum + payment.totalPayment) / _paymentSchedule!.length / 10000).toStringAsFixed(1)}만원'
                     : '계산 중...',
-                Icons.trending_up,
+                Icons.percent,
                 Colors.green,
               ),
             ],
@@ -940,7 +949,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   }
 
   String _formatDate(DateTime date) {
-    return '${date.month}월 ${date.day}일';
+    return '${date.year}년 ${date.month}월 ${date.day}일';
   }
 
   // 개별 상환 행 위젯

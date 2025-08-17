@@ -47,6 +47,9 @@ class LoanCalculator {
 
           if (month == loan.term) {
             principal = remainingPrincipal; // 마지막 달에는 남은 원금 모두 상환
+          }
+
+          if (month > loan.term) {
             break;
           }
 
@@ -78,7 +81,7 @@ class LoanCalculator {
 
           remainingPrincipal -= monthlyPrincipal;
 
-          if (month == loan.term) {
+          if (month > loan.term) {
             break;
           }
           schedule.add(
@@ -106,6 +109,9 @@ class LoanCalculator {
 
           if (month == loan.term) {
             remainingPrincipal = 0;
+          }
+
+          if (month > loan.term) {
             break;
           }
 
