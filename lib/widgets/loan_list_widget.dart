@@ -181,7 +181,7 @@ class LoanListWidget extends StatelessWidget {
             Icon(Icons.check_circle, color: Colors.green, size: 20),
             const SizedBox(width: 8),
             Text(
-              'D-Day +${daysSinceStart}일 (진행중)',
+              'D-Day +$daysSinceStart일 (진행중)',
               style: const TextStyle(
                 color: Colors.green,
                 fontWeight: FontWeight.w500,
@@ -207,7 +207,7 @@ class LoanListWidget extends StatelessWidget {
             Icon(Icons.schedule, color: Colors.orange, size: 20),
             const SizedBox(width: 8),
             Text(
-              'D-Day까지 ${days}일 ${hours}시간 남음',
+              'D-Day까지 $days일 $hours시간 남음',
               style: const TextStyle(
                 color: Colors.orange,
                 fontWeight: FontWeight.w500,
