@@ -24,6 +24,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   DateTime _selectedDate = DateTime.now();
   RepaymentType _selectedRepaymentType = RepaymentType.equalInstallment;
   bool _isLoading = false;
+  bool _isTermInYears = false; // 년/개월 선택 상태
 
   @override
   void dispose() {
@@ -149,29 +150,104 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                     const SizedBox(height: 16),
 
                     // 대출 기간
-                    _buildTextField(
-                      controller: _termController,
-                      label: '대출 기간',
-                      hint: '360',
-                      icon: Icons.schedule,
-                      suffixText: '개월',
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return '대출 기간을 입력해주세요';
-                        }
-                        final term = int.tryParse(value);
-                        if (term == null) {
-                          return '올바른 기간을 입력해주세요';
-                        }
-                        if (term < 1) {
-                          return '대출 기간은 1개월 이상이어야 합니다';
-                        }
-                        if (term > 600) {
-                          return '대출 기간은 600개월(50년) 이하여야 합니다';
-                        }
-                        return null;
-                      },
+                    // 대출 기간 (년/개월 선택)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.schedule, color: Colors.grey[600]),
+                            const SizedBox(width: 8),
+                            Text(
+                              '대출 기간',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[800],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _termController,
+                                decoration: InputDecoration(
+                                  hintText: _isTermInYears ? '30' : '360',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return '대출 기간을 입력해주세요';
+                                  }
+                                  final term = int.tryParse(value);
+                                  if (term == null) {
+                                    return '올바른 기간을 입력해주세요';
+                                  }
+                                  if (term < 1) {
+                                    return '대출 기간은 1 이상이어야 합니다';
+                                  }
+                                  if (_isTermInYears && term > 50) {
+                                    return '대출 기간은 50년 이하여야 합니다';
+                                  }
+                                  if (!_isTermInYears && term > 600) {
+                                    return '대출 기간은 600개월 이하여야 합니다';
+                                  }
+                                  return null;
+                                },
+                                onChanged: (value) {
+                                  // 년으로 입력된 경우 자동으로 개월로 변환하여 저장
+                                  if (_isTermInYears && value.isNotEmpty) {
+                                    final years = int.tryParse(value);
+                                    if (years != null) {
+                                      final months = years * 12;
+                                      // 컨트롤러 값은 변경하지 않고 내부적으로만 계산
+                                    }
+                                  }
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey[300]!),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: DropdownButton<bool>(
+                                value: _isTermInYears,
+                                underline: Container(),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: false,
+                                    child: Text('개월'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: true,
+                                    child: Text('년'),
+                                  ),
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    _isTermInYears = value!;
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
 
@@ -184,23 +260,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                     const SizedBox(height: 16),
 
                     // 상환일 (선택사항)
-                    _buildTextField(
-                      controller: _paymentDayController,
-                      label: '상환일 (선택사항)',
-                      hint: '매월 1일',
-                      icon: Icons.calendar_month,
-                      suffixText: '일',
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value != null && value.isNotEmpty) {
-                          final day = int.tryParse(value);
-                          if (day == null || day < 1 || day > 31) {
-                            return '1일부터 31일까지 입력해주세요';
-                          }
-                        }
-                        return null;
-                      },
-                    ),
+                    _buildPaymentDaySelector(),
                     const SizedBox(height: 16),
 
                     // 초기 납부금 (선택사항)
@@ -370,6 +430,100 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     );
   }
 
+  Widget _buildPaymentDaySelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.calendar_month, color: Colors.grey[600]),
+            const SizedBox(width: 8),
+            Text(
+              '상환일 (선택사항)',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[800],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: DropdownButtonFormField<int>(
+                  value: _paymentDayController.text.isNotEmpty
+                      ? int.parse(_paymentDayController.text)
+                      : null,
+                  decoration: const InputDecoration(
+                    hintText: '상환일 선택',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  items: List.generate(31, (index) => index + 1).map((day) {
+                    return DropdownMenuItem(value: day, child: Text('$day일'));
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value != null) {
+                        _paymentDayController.text = value.toString();
+                      } else {
+                        _paymentDayController.clear();
+                      }
+                    });
+                  },
+                  validator: (value) {
+                    if (value != null) {
+                      if (value < 1 || value > 31) {
+                        return '1일부터 31일까지 선택해주세요';
+                      }
+                    }
+                    return null;
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (_paymentDayController.text.isNotEmpty)
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _paymentDayController.clear();
+                  });
+                },
+                icon: const Icon(Icons.clear),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.grey[200],
+                  padding: const EdgeInsets.all(12),
+                ),
+              ),
+          ],
+        ),
+        if (_paymentDayController.text.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 16),
+            child: Text(
+              '※ 해당 월에 지정 납입일이 없는 경우에는 그 달의 말일을 납입일로 설정됩니다.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   void _saveLoan() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -377,12 +531,23 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
       });
 
       try {
+        // 대출 기간을 개월 단위로 변환
+        int termInMonths;
+        if (_isTermInYears) {
+          // 년으로 입력된 경우 개월로 변환
+          final years = int.parse(_termController.text);
+          termInMonths = years * 12;
+        } else {
+          // 개월로 입력된 경우 그대로 사용
+          termInMonths = int.parse(_termController.text);
+        }
+
         final loan = Loan(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           name: _nameController.text.trim(),
           amount: double.parse(_amountController.text.replaceAll(',', '')),
           interestRate: double.parse(_interestRateController.text),
-          term: int.parse(_termController.text),
+          term: termInMonths, // 변환된 개월 단위 사용
           startDate: _selectedDate,
           repaymentType: _selectedRepaymentType,
           initialPayment: _initialPaymentController.text.isNotEmpty

@@ -117,13 +117,13 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
 
     final monthlyData = _originalSchedule!;
     final principalData = monthlyData
-        .map((payment) => payment.principal)
+        .map((payment) => payment.principalAmount)
         .toList();
     final interestData = monthlyData
-        .map((payment) => payment.interest)
+        .map((payment) => payment.interestAmount)
         .toList();
     final months = monthlyData
-        .map((payment) => payment.month.toDouble())
+        .map((payment) => payment.paymentNumber.toDouble())
         .toList();
 
     return SingleChildScrollView(
@@ -159,10 +159,10 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
 
     final monthlyData = _originalSchedule!;
     final totalPayments = monthlyData
-        .map((payment) => payment.totalPayment)
+        .map((payment) => payment.totalAmount)
         .toList();
     final months = monthlyData
-        .map((payment) => payment.month.toDouble())
+        .map((payment) => payment.paymentNumber.toDouble())
         .toList();
 
     return SingleChildScrollView(
@@ -196,7 +196,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
         .map((payment) => payment.remainingBalance)
         .toList();
     final months = monthlyData
-        .map((payment) => payment.month.toDouble())
+        .map((payment) => payment.paymentNumber.toDouble())
         .toList();
 
     return SingleChildScrollView(
@@ -250,11 +250,11 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   Widget _buildSummaryCard() {
     final totalPrincipal = _originalSchedule!.fold(
       0.0,
-      (sum, payment) => sum + payment.principal,
+      (sum, payment) => sum + payment.principalAmount,
     );
     final totalInterest = _originalSchedule!.fold(
       0.0,
-      (sum, payment) => sum + payment.interest,
+      (sum, payment) => sum + payment.interestAmount,
     );
     final totalPayment = totalPrincipal + totalInterest;
 
@@ -424,11 +424,11 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
   Widget _buildPieChart() {
     final totalPrincipal = _originalSchedule!.fold(
       0.0,
-      (sum, payment) => sum + payment.principal,
+      (sum, payment) => sum + payment.principalAmount,
     );
     final totalInterest = _originalSchedule!.fold(
       0.0,
-      (sum, payment) => sum + payment.interest,
+      (sum, payment) => sum + payment.interestAmount,
     );
 
     return Card(
@@ -566,7 +566,7 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
 
   Widget _buildPaymentStatsCard() {
     final totalPayments = _originalSchedule!
-        .map((payment) => payment.totalPayment)
+        .map((payment) => payment.totalAmount)
         .toList();
     final avgPayment =
         totalPayments.reduce((a, b) => a + b) / totalPayments.length;
@@ -944,12 +944,14 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
     if (_prepaymentSchedule == null) return const SizedBox.shrink();
 
     final originalPayments = _originalSchedule!
-        .map((p) => p.totalPayment)
+        .map((p) => p.totalAmount)
         .toList();
     final prepaymentPayments = _prepaymentSchedule!
-        .map((p) => p.totalPayment)
+        .map((p) => p.totalAmount)
         .toList();
-    final months = _originalSchedule!.map((p) => p.month.toDouble()).toList();
+    final months = _originalSchedule!
+        .map((p) => p.paymentNumber.toDouble())
+        .toList();
 
     return Card(
       elevation: 2,
@@ -1046,11 +1048,11 @@ class _GraphAnalysisScreenState extends State<GraphAnalysisScreen>
 
     final originalTotal = _originalSchedule!.fold(
       0.0,
-      (sum, p) => sum + p.totalPayment,
+      (sum, p) => sum + p.totalAmount,
     );
     final prepaymentTotal = _prepaymentSchedule!.fold(
       0.0,
-      (sum, p) => sum + p.totalPayment,
+      (sum, p) => sum + p.totalAmount,
     );
     final savings = originalTotal - prepaymentTotal;
 

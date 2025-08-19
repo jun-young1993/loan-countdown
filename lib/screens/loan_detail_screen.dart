@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_common/flutter_common.dart';
+import 'package:flutter_common/models/payment_schedule/index.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:loan_countdown/utills/format_currency.dart';
+import 'package:flutter_common/state/payment_schedule/payment_schedule_page_bloc.dart';
 import '../models/loan.dart';
 import '../services/loan_calculator.dart';
 import 'prepayment_screen.dart';
@@ -21,6 +25,9 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   List<MonthlyPayment>? _paymentSchedule;
   final bool _isLoadingSchedule = false;
 
+  PaymentSchedulePageBloc? get _paymentScheduleBloc =>
+      context.read<PaymentSchedulePageBloc>();
+
   late final _pagingController = PagingController<int, MonthlyPayment>(
     getNextPageKey: (state) =>
         state.lastPageIsEmpty ? null : state.nextIntPageKey,
@@ -39,7 +46,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-
+    _paymentScheduleBloc?.add(ClearPaymentSchedule());
     _fetchPaymentSchedule();
   }
 
@@ -309,17 +316,14 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
             ),
             const SizedBox(height: 20),
             _buildInfoRow('대출명', widget.loan.name),
-            _buildInfoRow(
-              '대출금액',
-              '${(widget.loan.amount / 10000).toStringAsFixed(1)}만원',
-            ),
+            _buildInfoRow('대출금액', formatCurrency(widget.loan.amount)),
             _buildInfoRow('이율', '${widget.loan.interestRate}%'),
             _buildInfoRow('대출 기간', '${widget.loan.term}개월'),
             if (widget.loan.initialPayment != null &&
                 widget.loan.initialPayment! > 0)
               _buildInfoRow(
                 '초기 납부금',
-                '${(widget.loan.initialPayment! / 10000).toStringAsFixed(1)}만원',
+                formatCurrency(widget.loan.initialPayment!),
               ),
             if (widget.loan.paymentDay != null)
               _buildInfoRow('상환일', '매월 ${widget.loan.paymentDay}일'),
@@ -355,10 +359,13 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   Widget _buildRepaymentInfoCard(int remainingDays) {
     final totalAmount = widget.loan.amount;
     final monthlyPayment = _paymentSchedule?.isNotEmpty == true
-        ? _paymentSchedule!.first.totalPayment
+        ? _paymentSchedule!.first.totalAmount
         : 0.0;
     final totalInterest = _paymentSchedule?.isNotEmpty == true
-        ? _paymentSchedule!.fold(0.0, (sum, payment) => sum + payment.interest)
+        ? _paymentSchedule!.fold(
+            0.0,
+            (sum, payment) => sum + payment.interestAmount,
+          )
         : 0.0;
 
     return Card(
@@ -388,7 +395,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                 Expanded(
                   child: _buildRepaymentItem(
                     '월 납부금',
-                    '${(monthlyPayment / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(monthlyPayment),
                     Icons.payment,
                     Colors.blue,
                   ),
@@ -396,7 +403,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                 Expanded(
                   child: _buildRepaymentItem(
                     '총 이자',
-                    '${(totalInterest / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(totalInterest),
                     Icons.percent,
                     Colors.orange,
                   ),
@@ -409,7 +416,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                 Expanded(
                   child: _buildRepaymentItem(
                     '총 상환금',
-                    '${((totalAmount + totalInterest) / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(totalAmount + totalInterest),
                     Icons.account_balance_wallet,
                     Colors.green,
                   ),
@@ -458,10 +465,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
 
     if (widget.loan.initialPayment != null && widget.loan.initialPayment! > 0) {
       additionalItems.add(
-        _buildInfoRow(
-          '초기 납부금',
-          '${(widget.loan.initialPayment! / 10000).toStringAsFixed(1)}만원',
-        ),
+        _buildInfoRow('초기 납부금', formatCurrency(widget.loan.initialPayment!)),
       );
     }
 
@@ -600,7 +604,12 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
               _buildSummaryItem(
                 '총 상환금',
                 _paymentSchedule?.isNotEmpty == true
-                    ? '${(_paymentSchedule!.fold(0.0, (sum, payment) => sum + payment.totalPayment) / 10000).toStringAsFixed(1)}만원'
+                    ? formatCurrency(
+                        _paymentSchedule!.fold(
+                          0.0,
+                          (sum, payment) => sum + payment.totalAmount,
+                        ),
+                      )
                     : '계산 중...',
                 Icons.payment,
                 Colors.blue,
@@ -608,7 +617,11 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
               _buildSummaryItem(
                 '총 이자',
                 _paymentSchedule?.isNotEmpty == true
-                    ? '${(LoanCalculator.calculateTotalInterest(_paymentSchedule!) / 10000).toStringAsFixed(1)}만원'
+                    ? formatCurrency(
+                        LoanCalculator.calculateTotalInterest(
+                          _paymentSchedule!,
+                        ),
+                      )
                     : '계산 중...',
                 Icons.trending_up,
                 Colors.orange,
@@ -616,7 +629,13 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
               _buildSummaryItem(
                 '월 평균',
                 _paymentSchedule?.isNotEmpty == true
-                    ? '${(_paymentSchedule!.fold(0.0, (sum, payment) => sum + payment.totalPayment) / _paymentSchedule!.length / 10000).toStringAsFixed(1)}만원'
+                    ? formatCurrency(
+                        _paymentSchedule!.fold(
+                              0.0,
+                              (sum, payment) => sum + payment.totalAmount,
+                            ) /
+                            _paymentSchedule!.length,
+                      )
                     : '계산 중...',
                 Icons.percent,
                 Colors.green,
@@ -629,57 +648,76 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
         Expanded(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
-            child: PagingListener<int, MonthlyPayment>(
-              controller: _pagingController,
-              builder: (context, state, fetchNextPage) =>
-                  PagedListView<int, MonthlyPayment>(
-                    state: state,
-                    fetchNextPage: fetchNextPage,
-                    builderDelegate: PagedChildBuilderDelegate<MonthlyPayment>(
-                      itemBuilder: (context, payment, index) =>
-                          _buildPaymentRow(payment),
-                      firstPageProgressIndicatorBuilder: (context) =>
-                          const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: CircularProgressIndicator(),
+            child:
+                BlocBuilder<
+                  PaymentSchedulePageBloc,
+                  PagingState<int, PaymentSchedule>
+                >(
+                  bloc: _paymentScheduleBloc,
+                  builder: (context, state) =>
+                      PagedListView<int, PaymentSchedule>(
+                        state: state,
+                        fetchNextPage: () {
+                          _paymentScheduleBloc?.add(
+                            FetchNextPaymentSchedule(widget.loan.id),
+                          );
+                        },
+                        builderDelegate:
+                            PagedChildBuilderDelegate<PaymentSchedule>(
+                              itemBuilder: (context, payment, index) =>
+                                  _buildPaymentRow(payment),
+                              firstPageProgressIndicatorBuilder: (context) =>
+                                  const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(16.0),
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  ),
+                              newPageProgressIndicatorBuilder: (context) =>
+                                  const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(16.0),
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  ),
+                              noItemsFoundIndicatorBuilder: (context) =>
+                                  const Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.schedule,
+                                          size: 64,
+                                          color: Colors.grey,
+                                        ),
+                                        SizedBox(height: 16),
+                                        Text(
+                                          '상환 스케줄을 불러올 수 없습니다',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              noMoreItemsIndicatorBuilder: (context) =>
+                                  const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(16.0),
+                                      child: Text(
+                                        '모든 상환 스케줄을 불러왔습니다',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                             ),
-                          ),
-                      newPageProgressIndicatorBuilder: (context) =>
-                          const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: CircularProgressIndicator(),
-                            ),
-                          ),
-                      noItemsFoundIndicatorBuilder: (context) => const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.schedule, size: 64, color: Colors.grey),
-                            SizedBox(height: 16),
-                            Text(
-                              '상환 스케줄을 불러올 수 없습니다',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                      noMoreItemsIndicatorBuilder: (context) => const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Text(
-                            '모든 상환 스케줄을 불러왔습니다',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-            ),
+                ),
           ),
         ),
       ],
@@ -717,11 +755,11 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   Widget _buildPieChart() {
     final totalPrincipal = _paymentSchedule!.fold(
       0.0,
-      (sum, payment) => sum + payment.principal,
+      (sum, payment) => sum + payment.principalAmount,
     );
     final totalInterest = _paymentSchedule!.fold(
       0.0,
-      (sum, payment) => sum + payment.interest,
+      (sum, payment) => sum + payment.interestAmount,
     );
 
     return Card(
@@ -744,8 +782,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                   sections: [
                     PieChartSectionData(
                       value: totalPrincipal,
-                      title:
-                          '원금\n${(totalPrincipal / 10000).toStringAsFixed(1)}만원',
+                      title: '원금\n${formatCurrency(totalPrincipal)}',
                       color: Colors.blue,
                       radius: 80,
                       titleStyle: const TextStyle(
@@ -756,8 +793,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                     ),
                     PieChartSectionData(
                       value: totalInterest,
-                      title:
-                          '이자\n${(totalInterest / 10000).toStringAsFixed(1)}만원',
+                      title: '이자\n${formatCurrency(totalInterest)}',
                       color: Colors.orange,
                       radius: 80,
                       titleStyle: const TextStyle(
@@ -779,10 +815,10 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
 
   Widget _buildLineChart() {
     final monthlyPayments = _paymentSchedule!
-        .map((payment) => payment.totalPayment)
+        .map((payment) => payment.totalAmount)
         .toList();
     final months = _paymentSchedule!
-        .map((payment) => payment.month.toDouble())
+        .map((payment) => payment.paymentNumber.toDouble())
         .toList();
 
     return Card(
@@ -809,9 +845,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                         showTitles: true,
                         reservedSize: 60,
                         getTitlesWidget: (value, meta) {
-                          return Text(
-                            '${(value / 10000).toStringAsFixed(0)}만원',
-                          );
+                          return Text(formatCurrency(value));
                         },
                       ),
                     ),
@@ -856,7 +890,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
         .map((payment) => payment.remainingBalance)
         .toList();
     final months = _paymentSchedule!
-        .map((payment) => payment.month.toDouble())
+        .map((payment) => payment.paymentNumber.toDouble())
         .toList();
 
     return Card(
@@ -883,9 +917,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                         showTitles: true,
                         reservedSize: 60,
                         getTitlesWidget: (value, meta) {
-                          return Text(
-                            '${(value / 10000).toStringAsFixed(0)}만원',
-                          );
+                          return Text(formatCurrency(value));
                         },
                       ),
                     ),
@@ -953,7 +985,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   }
 
   // 개별 상환 행 위젯
-  Widget _buildPaymentRow(MonthlyPayment payment) {
+  Widget _buildPaymentRow(PaymentSchedule payment) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       elevation: 2,
@@ -976,7 +1008,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
-                    '${payment.month}개월',
+                    '${payment.paymentNumber}개월',
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -1003,7 +1035,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                 Expanded(
                   child: _buildPaymentInfoItem(
                     '원금',
-                    '${(payment.principal / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(payment.principalAmount),
                     Icons.account_balance_wallet,
                     Colors.blue,
                   ),
@@ -1011,7 +1043,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                 Expanded(
                   child: _buildPaymentInfoItem(
                     '이자',
-                    '${(payment.interest / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(payment.interestAmount),
                     Icons.trending_up,
                     Colors.orange,
                   ),
@@ -1024,7 +1056,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                 Expanded(
                   child: _buildPaymentInfoItem(
                     '총 납부금',
-                    '${(payment.totalPayment / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(payment.totalAmount),
                     Icons.payment,
                     Colors.green,
                   ),
@@ -1032,7 +1064,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                 Expanded(
                   child: _buildPaymentInfoItem(
                     '잔액',
-                    '${(payment.remainingBalance / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(payment.remainingBalance),
                     Icons.account_balance,
                     Colors.purple,
                   ),

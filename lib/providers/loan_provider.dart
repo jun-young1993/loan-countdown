@@ -25,6 +25,26 @@ class LoanProvider extends ChangeNotifier {
     await _loadLoans();
   }
 
+  // Future<void> loadSchedule(
+  //   Loan loan, {
+  //   required int skip,
+  //   required int take,
+  //   required String order,
+  // }) async {
+  //   try {
+  //     _schedule = await _loanRepository.findSchedule(
+  //       loan,
+  //       skip: skip,
+  //       take: take,
+  //       order: order,
+  //     );
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print('대출 상환 계획 로드 오류: $e');
+  //     }
+  //   }
+  // }
+
   // 대출 목록 로드
   Future<void> _loadLoans() async {
     try {

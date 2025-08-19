@@ -7,7 +7,7 @@ final formatter = NumberFormat.currency(
   decimalDigits: 0,
 );
 
-String formatCurrency(int amount) {
+String formatCurrency(num amount) {
   if (amount >= 100000000) {
     return '${(amount / 100000000).toStringAsFixed(1)}억원';
   } else if (amount >= 10000) {
@@ -15,6 +15,6 @@ String formatCurrency(int amount) {
   } else if (amount >= 1000) {
     return '${(amount / 1000).toStringAsFixed(0)}천원';
   } else {
-    return '$amount원';
+    return '${amount.toStringAsFixed(0)}원';
   }
 }

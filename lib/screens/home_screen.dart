@@ -9,6 +9,7 @@ import 'package:flutter_common/widgets/ad/ad_open_app.dart';
 import 'package:flutter_common/widgets/layout/notice_screen_layout.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:loan_countdown/screens/add_loan_screen.dart';
+import 'package:loan_countdown/utills/format_currency.dart';
 import 'package:provider/provider.dart';
 import '../providers/loan_provider.dart';
 import '../models/loan.dart';
@@ -511,7 +512,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Expanded(
                     child: _buildStatItem(
                       '총 대출금',
-                      '${(totalAmount / 10000).toStringAsFixed(1)}만원',
+                      formatCurrency(totalAmount),
                       Icons.attach_money,
                       Colors.purple,
                     ),
@@ -622,7 +623,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${(loan.amount / 10000).toStringAsFixed(1)}만원 • ${loan.interestRate}%',
+                  '${formatCurrency(loan.amount)} • ${loan.interestRate}%',
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
@@ -703,7 +704,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${(nextLoan.amount / 10000).toStringAsFixed(1)}만원',
+                            formatCurrency(nextLoan.amount),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -759,7 +760,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Expanded(
                   child: _buildStatItem(
                     '총 대출금',
-                    '${(stats['totalAmount'] / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(stats['totalAmount']),
                     Icons.attach_money,
                     Colors.blue,
                   ),
@@ -767,7 +768,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Expanded(
                   child: _buildStatItem(
                     '총 이자',
-                    '${(stats['totalInterest'] / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(stats['totalInterest']),
                     Icons.percent,
                     Colors.orange,
                   ),
@@ -839,7 +840,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             children: [
               Expanded(
                 child: Text(
-                  '${(loan.amount / 10000).toStringAsFixed(1)}만원',
+                  formatCurrency(loan.amount),
                   style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ),

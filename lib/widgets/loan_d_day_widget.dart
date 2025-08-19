@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:loan_countdown/models/loan.dart';
+import 'package:loan_countdown/utills/format_currency.dart';
 
 class LoanDDayWidget extends StatefulWidget {
   final List<Loan> loans; // List<Loan> 추가 (선택적)
@@ -267,7 +268,7 @@ class _LoanDDayWidgetState extends State<LoanDDayWidget>
                 ),
                 _buildInfoColumn(
                   '대출금액',
-                  '${(loan.amount / 10000).toStringAsFixed(1)}만원',
+                  formatCurrency(loan.amount),
                   Icons.attach_money,
                   cardColor,
                 ),
@@ -566,7 +567,7 @@ class _LoanDDayWidgetState extends State<LoanDDayWidget>
         final remainingMonths = totalMonths - elapsedMonths;
         final remainingAmount = _calculateRemainingAmount(loan, elapsedMonths);
         progressText = '${(progress * 100).toStringAsFixed(1)}% 완료';
-        detailText = '${(remainingAmount / 10000).toStringAsFixed(1)}만원 남음';
+        detailText = '${formatCurrency(remainingAmount)} 남음';
       }
     }
 

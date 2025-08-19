@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loan_countdown/utills/format_currency.dart';
 import 'package:provider/provider.dart';
 import '../models/loan.dart';
 import '../services/loan_calculator.dart';
@@ -295,11 +296,11 @@ class _PrepaymentScreenState extends State<PrepaymentScreen> {
 
     final originalTotal = _originalSchedule!.fold(
       0.0,
-      (sum, payment) => sum + payment.totalPayment,
+      (sum, payment) => sum + payment.totalAmount,
     );
     final newTotal = _newSchedule!.fold(
       0.0,
-      (sum, payment) => sum + payment.totalPayment,
+      (sum, payment) => sum + payment.totalAmount,
     );
     final totalSavings = originalTotal - newTotal;
     final originalInterest = LoanCalculator.calculateTotalInterest(
@@ -326,14 +327,14 @@ class _PrepaymentScreenState extends State<PrepaymentScreen> {
                 Expanded(
                   child: _buildResultItem(
                     '원본 총 상환금',
-                    '${(originalTotal / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(originalTotal),
                     Colors.red,
                   ),
                 ),
                 Expanded(
                   child: _buildResultItem(
                     '새 총 상환금',
-                    '${(newTotal / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(newTotal),
                     Colors.green,
                   ),
                 ),
@@ -346,14 +347,14 @@ class _PrepaymentScreenState extends State<PrepaymentScreen> {
                 Expanded(
                   child: _buildResultItem(
                     '총 절약액',
-                    '${(totalSavings / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(totalSavings),
                     Colors.blue,
                   ),
                 ),
                 Expanded(
                   child: _buildResultItem(
                     '이자 절약',
-                    '${((originalInterest - newInterest) / 10000).toStringAsFixed(1)}만원',
+                    formatCurrency(originalInterest - newInterest),
                     Colors.orange,
                   ),
                 ),
@@ -365,7 +366,10 @@ class _PrepaymentScreenState extends State<PrepaymentScreen> {
             if (_selectedType == PrepaymentType.reduceAmount) ...[
               _buildResultItem(
                 '월 납부금 변화',
-                '${((_originalSchedule!.first.totalPayment - _newSchedule!.first.totalPayment) / 10000).toStringAsFixed(1)}만원 감소',
+                formatCurrency(
+                  _originalSchedule!.first.totalAmount -
+                      _newSchedule!.first.totalAmount,
+                ),
                 Colors.purple,
               ),
             ] else ...[
@@ -405,21 +409,17 @@ class _PrepaymentScreenState extends State<PrepaymentScreen> {
                       cells: [
                         DataCell(Text('${index + 1}')),
                         DataCell(const Text('-')),
-                        DataCell(
-                          Text(
-                            '${(newPayment.totalPayment / 10000).toStringAsFixed(1)}만원',
-                          ),
-                        ),
+                        DataCell(Text(formatCurrency(newPayment.totalAmount))),
                         DataCell(const Text('신규')),
                       ],
                     );
                   }
 
                   final difference =
-                      newPayment.totalPayment - original.totalPayment;
+                      newPayment.totalAmount - original.totalAmount;
                   final differenceText = difference >= 0
-                      ? '+${(difference / 10000).toStringAsFixed(1)}만원'
-                      : '${(difference / 10000).toStringAsFixed(1)}만원';
+                      ? '+${formatCurrency(difference)}'
+                      : formatCurrency(difference);
                   final differenceColor = difference >= 0
                       ? Colors.red
                       : Colors.green;
@@ -427,16 +427,8 @@ class _PrepaymentScreenState extends State<PrepaymentScreen> {
                   return DataRow(
                     cells: [
                       DataCell(Text('${index + 1}')),
-                      DataCell(
-                        Text(
-                          '${(original.totalPayment / 10000).toStringAsFixed(1)}만원',
-                        ),
-                      ),
-                      DataCell(
-                        Text(
-                          '${(newPayment.totalPayment / 10000).toStringAsFixed(1)}만원',
-                        ),
-                      ),
+                      DataCell(Text(formatCurrency(original.totalAmount))),
+                      DataCell(Text(formatCurrency(newPayment.totalAmount))),
                       DataCell(
                         Text(
                           differenceText,

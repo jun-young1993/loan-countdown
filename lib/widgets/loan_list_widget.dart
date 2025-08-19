@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loan_countdown/utills/format_currency.dart';
 import 'package:provider/provider.dart';
 import '../providers/loan_provider.dart';
 import '../models/loan.dart';
@@ -88,7 +89,7 @@ class LoanListWidget extends StatelessWidget {
                   Expanded(
                     child: _buildInfoItem(
                       '대출금액',
-                      '${(loan.amount / 10000).toStringAsFixed(1)}만원',
+                      formatCurrency(loan.amount),
                       Icons.attach_money,
                     ),
                   ),

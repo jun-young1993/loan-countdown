@@ -36,6 +36,8 @@ class LoanCalculator {
     List<MonthlyPayment> schedule = [];
     double remainingPrincipal = loan.amount;
     double monthlyRate = loan.interestRate / 100 / 12;
+    String loanId = loan.id;
+    DateTime now = DateTime.now();
 
     switch (loan.repaymentType) {
       case RepaymentType.equalInstallment:
@@ -57,16 +59,25 @@ class LoanCalculator {
 
           schedule.add(
             MonthlyPayment(
-              month: month,
+              id: '${loanId}_month_$month',
+              paymentNumber: month,
               paymentDate: DateTime(
                 loan.startDate.year,
-                loan.startDate.month + month,
+                loan.startDate.month + month - 1,
                 loan.startDate.day,
               ),
-              principal: principal,
-              interest: interest,
-              totalPayment: monthlyPayment,
+              principalAmount: principal,
+              interestAmount: interest,
+              totalAmount: monthlyPayment,
               remainingBalance: remainingPrincipal > 0 ? remainingPrincipal : 0,
+              status: 'PENDING',
+              paidAt: null,
+              actualPaidAmount: 0.0,
+              lateFee: 0.0,
+              notes: null,
+              createdAt: now,
+              updatedAt: now,
+              loanId: loanId,
             ),
           );
         }
@@ -86,16 +97,25 @@ class LoanCalculator {
           }
           schedule.add(
             MonthlyPayment(
-              month: month,
+              id: '${loanId}_month_$month',
+              paymentNumber: month,
               paymentDate: DateTime(
                 loan.startDate.year,
-                loan.startDate.month + month,
+                loan.startDate.month + month - 1,
                 loan.startDate.day,
               ),
-              principal: monthlyPrincipal,
-              interest: interest,
-              totalPayment: totalPayment,
+              principalAmount: monthlyPrincipal,
+              interestAmount: interest,
+              totalAmount: totalPayment,
               remainingBalance: remainingPrincipal > 0 ? remainingPrincipal : 0,
+              status: 'PENDING',
+              paidAt: null,
+              actualPaidAmount: 0.0,
+              lateFee: 0.0,
+              notes: null,
+              createdAt: now,
+              updatedAt: now,
+              loanId: loanId,
             ),
           );
         }
@@ -117,16 +137,25 @@ class LoanCalculator {
 
           schedule.add(
             MonthlyPayment(
-              month: month,
+              id: '${loanId}_month_$month',
+              paymentNumber: month,
               paymentDate: DateTime(
                 loan.startDate.year,
-                loan.startDate.month + month,
+                loan.startDate.month + month - 1,
                 loan.startDate.day,
               ),
-              principal: principal,
-              interest: interest,
-              totalPayment: totalPayment,
+              principalAmount: principal,
+              interestAmount: interest,
+              totalAmount: totalPayment,
               remainingBalance: remainingPrincipal > 0 ? remainingPrincipal : 0,
+              status: 'PENDING',
+              paidAt: null,
+              actualPaidAmount: 0.0,
+              lateFee: 0.0,
+              notes: null,
+              createdAt: now,
+              updatedAt: now,
+              loanId: loanId,
             ),
           );
         }
@@ -188,7 +217,7 @@ class LoanCalculator {
         double adjustment = originalMonthlyPayment - newMonthlyPayment;
 
         remainingSchedule[i] = payment.copyWith(
-          totalPayment: payment.totalPayment + adjustment,
+          totalAmount: payment.totalAmount + adjustment,
         );
       }
     }
@@ -200,12 +229,12 @@ class LoanCalculator {
 
   /// 총 이자 계산
   static double calculateTotalInterest(List<MonthlyPayment> schedule) {
-    return schedule.fold(0.0, (sum, payment) => sum + payment.interest);
+    return schedule.fold(0.0, (sum, payment) => sum + payment.interestAmount);
   }
 
   /// 총 상환금 계산
   static double calculateTotalPayment(List<MonthlyPayment> schedule) {
-    return schedule.fold(0.0, (sum, payment) => sum + payment.totalPayment);
+    return schedule.fold(0.0, (sum, payment) => sum + payment.totalAmount);
   }
 
   /// 이자 절감액 계산 (중도금 상환 시)
@@ -221,59 +250,115 @@ class LoanCalculator {
 
 /// 월별 상환 정보
 class MonthlyPayment {
-  final int month;
+  final String id;
+  final int paymentNumber;
   final DateTime paymentDate;
-  final double principal;
-  final double interest;
-  final double totalPayment;
+  final double principalAmount;
+  final double interestAmount;
+  final double totalAmount;
   final double remainingBalance;
+  final String status;
+  final DateTime? paidAt;
+  final double actualPaidAmount;
+  final double lateFee;
+  final String? notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String loanId;
 
   MonthlyPayment({
-    required this.month,
+    required this.id,
+    required this.paymentNumber,
     required this.paymentDate,
-    required this.principal,
-    required this.interest,
-    required this.totalPayment,
+    required this.principalAmount,
+    required this.interestAmount,
+    required this.totalAmount,
     required this.remainingBalance,
+    required this.status,
+    this.paidAt,
+    required this.actualPaidAmount,
+    required this.lateFee,
+    this.notes,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.loanId,
   });
 
   MonthlyPayment copyWith({
-    int? month,
+    String? id,
+    int? paymentNumber,
     DateTime? paymentDate,
-    double? principal,
-    double? interest,
-    double? totalPayment,
+    double? principalAmount,
+    double? interestAmount,
+    double? totalAmount,
     double? remainingBalance,
+    String? status,
+    DateTime? paidAt,
+    double? actualPaidAmount,
+    double? lateFee,
+    String? notes,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? loanId,
   }) {
     return MonthlyPayment(
-      month: month ?? this.month,
+      id: id ?? this.id,
+      paymentNumber: paymentNumber ?? this.paymentNumber,
       paymentDate: paymentDate ?? this.paymentDate,
-      principal: principal ?? this.principal,
-      interest: interest ?? this.interest,
-      totalPayment: totalPayment ?? this.totalPayment,
+      principalAmount: principalAmount ?? this.principalAmount,
+      interestAmount: interestAmount ?? this.interestAmount,
+      totalAmount: totalAmount ?? this.totalAmount,
       remainingBalance: remainingBalance ?? this.remainingBalance,
+      status: status ?? this.status,
+      paidAt: paidAt ?? this.paidAt,
+      actualPaidAmount: actualPaidAmount ?? this.actualPaidAmount,
+      lateFee: lateFee ?? this.lateFee,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      loanId: loanId ?? this.loanId,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'month': month,
+      'id': id,
+      'paymentNumber': paymentNumber,
       'paymentDate': paymentDate.toIso8601String(),
-      'principal': principal,
-      'interest': interest,
-      'totalPayment': totalPayment,
-      'remainingBalance': remainingBalance,
+      'principalAmount': principalAmount.toStringAsFixed(2),
+      'interestAmount': interestAmount.toStringAsFixed(2),
+      'totalAmount': totalAmount.toStringAsFixed(2),
+      'remainingBalance': remainingBalance.toStringAsFixed(2),
+      'status': status,
+      'paidAt': paidAt?.toIso8601String(),
+      'actualPaidAmount': actualPaidAmount.toStringAsFixed(2),
+      'lateFee': lateFee.toStringAsFixed(2),
+      'notes': notes,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'loanId': loanId,
     };
   }
 
   factory MonthlyPayment.fromJson(Map<String, dynamic> json) {
     return MonthlyPayment(
-      month: json['month'],
-      paymentDate: DateTime.parse(json['paymentDate']),
-      principal: json['principal'].toDouble(),
-      interest: json['interest'].toDouble(),
-      totalPayment: json['totalPayment'].toDouble(),
-      remainingBalance: json['remainingBalance'].toDouble(),
+      id: json['id'] as String,
+      paymentNumber: json['paymentNumber'] as int,
+      paymentDate: DateTime.parse(json['paymentDate'] as String),
+      principalAmount: double.parse(json['principalAmount'] as String),
+      interestAmount: double.parse(json['interestAmount'] as String),
+      totalAmount: double.parse(json['totalAmount'] as String),
+      remainingBalance: double.parse(json['remainingBalance'] as String),
+      status: json['status'] as String,
+      paidAt: json['paidAt'] != null
+          ? DateTime.parse(json['paidAt'] as String)
+          : null,
+      actualPaidAmount: double.parse(json['actualPaidAmount'] as String),
+      lateFee: double.parse(json['lateFee'] as String),
+      notes: json['notes'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      loanId: json['loanId'] as String,
     );
   }
 }

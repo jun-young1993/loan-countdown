@@ -2,22 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_common/constants/juny_constants.dart';
 import 'package:flutter_common/flutter_common.dart';
 import 'package:flutter_common/network/dio_client.dart';
-import 'package:flutter_common/providers/index.dart';
-import 'package:flutter_common/repositories/app_repository.dart';
-import 'package:flutter_common/repositories/app_reward_repository.dart';
-import 'package:flutter_common/repositories/notice_group_repository.dart';
-import 'package:flutter_common/repositories/notice_reply_repository.dart';
-import 'package:flutter_common/repositories/notice_repository.dart';
-import 'package:flutter_common/repositories/user_repository.dart';
-import 'package:flutter_common/repositories/verification_repository.dart';
-import 'package:flutter_common/state/app_config/app_config_bloc.dart';
-import 'package:flutter_common/state/notice/notice_bloc.dart';
+import 'package:flutter_common/repositories/payment_schedule_repository.dart';
 import 'package:flutter_common/state/notice/notice_page_bloc.dart';
 import 'package:flutter_common/state/notice_group/notice_group_bloc.dart';
 import 'package:flutter_common/state/notice_reply/notice_reply_bloc.dart';
 import 'package:flutter_common/state/user/user_bloc.dart';
 import 'package:flutter_common/state/verification/verification_bloc.dart';
 import 'package:flutter_common/state/verification/verification_listener.dart';
+import 'package:flutter_common/state/payment_schedule/payment_schedule_page_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:loan_countdown/repositorys/loan_repository.dart';
 import 'package:provider/provider.dart';
@@ -99,6 +91,10 @@ void main() async {
         RepositoryProvider<LoanRepository>(
           create: (context) => LoanDefaultRepository(dioClient: dioClient),
         ),
+        RepositoryProvider<PaymentScheduleRepository>(
+          create: (context) =>
+              PaymentScheduleDefaultRepository(dioClient: dioClient),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -132,6 +128,12 @@ void main() async {
           BlocProvider(
             create: (context) => NoticeReplyBloc(
               noticeReplyRepository: context.read<NoticeReplyRepository>(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => PaymentSchedulePageBloc(
+              paymentScheduleRepository: context
+                  .read<PaymentScheduleRepository>(),
             ),
           ),
         ],
