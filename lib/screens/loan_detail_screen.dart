@@ -24,44 +24,30 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   late TabController _tabController;
   List<MonthlyPayment>? _paymentSchedule;
   final bool _isLoadingSchedule = false;
+  bool toggleOrder = false;
 
   PaymentSchedulePageBloc? get _paymentScheduleBloc =>
       context.read<PaymentSchedulePageBloc>();
-
-  late final _pagingController = PagingController<int, MonthlyPayment>(
-    getNextPageKey: (state) =>
-        state.lastPageIsEmpty ? null : state.nextIntPageKey,
-    fetchPage: (pageKey) async {
-      final result = LoanCalculator.generatePaymentSchedule(
-        widget.loan,
-        startMonth: pageKey == 1 ? 1 : (pageKey - 1) * 100 + 1,
-        limit: pageKey == 1 ? 100 : (pageKey - 1) * 100 + 100,
-      );
-
-      return result;
-    },
-  );
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _paymentScheduleBloc?.add(ClearPaymentSchedule());
-    _fetchPaymentSchedule();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _pagingController.dispose();
     super.dispose();
   }
 
-  Future<void> _fetchPaymentSchedule() async {
-    _paymentSchedule = LoanCalculator.generatePaymentSchedule(
-      widget.loan,
-      limit: widget.loan.term,
-    );
+  void _toggleOrder() {
+    setState(() {
+      toggleOrder = !toggleOrder;
+    });
+
+    _paymentScheduleBloc?.add(ChangeOrder(toggleOrder ? 'DESC' : 'ASC'));
   }
 
   @override
@@ -583,66 +569,11 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   Widget _buildScheduleTab() {
     return Column(
       children: [
-        // 요약 정보 (로딩 중일 때는 기본값 표시)
-        Container(
-          margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildSummaryItem(
-                '총 상환금',
-                _paymentSchedule?.isNotEmpty == true
-                    ? formatCurrency(
-                        _paymentSchedule!.fold(
-                          0.0,
-                          (sum, payment) => sum + payment.totalAmount,
-                        ),
-                      )
-                    : '계산 중...',
-                Icons.payment,
-                Colors.blue,
-              ),
-              _buildSummaryItem(
-                '총 이자',
-                _paymentSchedule?.isNotEmpty == true
-                    ? formatCurrency(
-                        LoanCalculator.calculateTotalInterest(
-                          _paymentSchedule!,
-                        ),
-                      )
-                    : '계산 중...',
-                Icons.trending_up,
-                Colors.orange,
-              ),
-              _buildSummaryItem(
-                '월 평균',
-                _paymentSchedule?.isNotEmpty == true
-                    ? formatCurrency(
-                        _paymentSchedule!.fold(
-                              0.0,
-                              (sum, payment) => sum + payment.totalAmount,
-                            ) /
-                            _paymentSchedule!.length,
-                      )
-                    : '계산 중...',
-                Icons.percent,
-                Colors.green,
-              ),
-            ],
-          ),
-        ),
+        // 검색 및 필터 헤더
+        _buildScheduleHeader(),
+
+        // 요약 정보 카드
+        _buildScheduleSummaryCard(),
 
         // 상환 스케줄 테이블 (무한 스크롤)
         Expanded(
@@ -665,7 +596,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                         builderDelegate:
                             PagedChildBuilderDelegate<PaymentSchedule>(
                               itemBuilder: (context, payment, index) =>
-                                  _buildPaymentRow(payment),
+                                  _buildScheduleTableRow(payment),
                               firstPageProgressIndicatorBuilder: (context) =>
                                   const Center(
                                     child: Padding(
@@ -721,6 +652,528 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
           ),
         ),
       ],
+    );
+  }
+
+  // 상환 스케줄 헤더 (검색, 필터, 정렬)
+  Widget _buildScheduleHeader() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // 헤더 제목
+              Row(
+                children: [
+                  Icon(
+                    Icons.table_chart,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    '상환 스케줄',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  // 정렬 토글 버튼
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: IconButton(
+                      onPressed: _toggleOrder,
+                      icon: Icon(
+                        toggleOrder ? Icons.arrow_downward : Icons.arrow_upward,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      tooltip: '정렬 방향 변경',
+                      style: IconButton.styleFrom(
+                        padding: const EdgeInsets.all(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // 검색 및 필터 행
+              Row(
+                children: [
+                  // 검색 입력 필드
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: '월별 검색...',
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        isDense: true,
+                      ),
+                      onChanged: (value) {
+                        // 검색 로직 구현
+                        setState(() {
+                          // 검색 상태 업데이트
+                        });
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // 상태 필터 드롭다운
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: DropdownButtonFormField<String>(
+                      value: '전체',
+                      decoration: const InputDecoration(
+                        hintText: '상태',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        isDense: true,
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: '전체', child: Text('전체')),
+                        DropdownMenuItem(value: '미납', child: Text('미납')),
+                        DropdownMenuItem(value: '납입완료', child: Text('완료')),
+                        DropdownMenuItem(value: '연체', child: Text('연체')),
+                      ],
+                      onChanged: (value) {
+                        // 상태 필터 로직 구현
+                        setState(() {
+                          // 필터 상태 업데이트
+                        });
+                      },
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 상환 스케줄 요약 정보 카드
+  Widget _buildScheduleSummaryCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+              ],
+            ),
+          ),
+          child: Column(
+            children: [
+              // 요약 제목
+              Row(
+                children: [
+                  Icon(
+                    Icons.analytics,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '상환 요약',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // 요약 정보 그리드 (2x2)
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSummaryGridItem(
+                      '총 상환금',
+                      _paymentSchedule?.isNotEmpty == true
+                          ? formatCurrency(
+                              _paymentSchedule!.fold(
+                                0.0,
+                                (sum, payment) => sum + payment.totalAmount,
+                              ),
+                            )
+                          : '계산 중...',
+                      Icons.payment,
+                      Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildSummaryGridItem(
+                      '총 이자',
+                      _paymentSchedule?.isNotEmpty == true
+                          ? formatCurrency(
+                              LoanCalculator.calculateTotalInterest(
+                                _paymentSchedule!,
+                              ),
+                            )
+                          : '계산 중...',
+                      Icons.trending_up,
+                      Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSummaryGridItem(
+                      '월 평균',
+                      _paymentSchedule?.isNotEmpty == true
+                          ? formatCurrency(
+                              _paymentSchedule!.fold(
+                                    0.0,
+                                    (sum, payment) => sum + payment.totalAmount,
+                                  ) /
+                                  _paymentSchedule!.length,
+                            )
+                          : '계산 중...',
+                      Icons.percent,
+                      Colors.green,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildSummaryGridItem(
+                      '총 개월',
+                      _paymentSchedule?.isNotEmpty == true
+                          ? '${_paymentSchedule!.length}개월'
+                          : '계산 중...',
+                      Icons.calendar_month,
+                      Colors.purple,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 요약 그리드 아이템
+  Widget _buildSummaryGridItem(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 상환 스케줄 테이블 행 (모바일 최적화)
+  Widget _buildScheduleTableRow(PaymentSchedule payment) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // 첫 번째 행: 월 정보와 상태
+              Row(
+                children: [
+                  // 월 정보 배지
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${payment.paymentNumber}개월',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // 납부일
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _formatDate(payment.paymentDate),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[800],
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '납부 예정일',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // 상태 표시
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(payment.status),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _getStatusText(payment.status),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // 두 번째 행: 금액 정보 테이블
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      // 테이블 헤더
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '구분',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[700],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              '금액',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[700],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // 원금 행
+                      _buildTableRow(
+                        '원금',
+                        formatCurrency(payment.principalAmount),
+                        Colors.blue,
+                      ),
+
+                      // 이자 행
+                      _buildTableRow(
+                        '이자',
+                        formatCurrency(payment.interestAmount),
+                        Colors.orange,
+                      ),
+
+                      // 총액 행
+                      _buildTableRow(
+                        '총액',
+                        formatCurrency(payment.totalAmount),
+                        Colors.green,
+                      ),
+
+                      // 잔액 행
+                      _buildTableRow(
+                        '잔액',
+                        formatCurrency(payment.remainingBalance),
+                        Colors.purple,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 세 번째 행: 추가 정보 (있는 경우에만)
+              if (payment.notes != null && payment.notes!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue[200]!),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.note, size: 16, color: Colors.blue[700]),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            payment.notes!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue[700],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 테이블 행 위젯
+  Widget _buildTableRow(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 12,
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -984,125 +1437,37 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
     return '${date.year}년 ${date.month}월 ${date.day}일';
   }
 
-  // 개별 상환 행 위젯
-  Widget _buildPaymentRow(PaymentSchedule payment) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 월 정보와 납부일
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    '${payment.paymentNumber}개월',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  _formatDate(payment.paymentDate),
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // 상환 정보 그리드
-            Row(
-              children: [
-                Expanded(
-                  child: _buildPaymentInfoItem(
-                    '원금',
-                    formatCurrency(payment.principalAmount),
-                    Icons.account_balance_wallet,
-                    Colors.blue,
-                  ),
-                ),
-                Expanded(
-                  child: _buildPaymentInfoItem(
-                    '이자',
-                    formatCurrency(payment.interestAmount),
-                    Icons.trending_up,
-                    Colors.orange,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildPaymentInfoItem(
-                    '총 납부금',
-                    formatCurrency(payment.totalAmount),
-                    Icons.payment,
-                    Colors.green,
-                  ),
-                ),
-                Expanded(
-                  child: _buildPaymentInfoItem(
-                    '잔액',
-                    formatCurrency(payment.remainingBalance),
-                    Icons.account_balance,
-                    Colors.purple,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
+  // 상태별 색상 반환
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'paid':
+      case '납입완료':
+        return Colors.green;
+      case 'unpaid':
+      case '미납':
+        return Colors.orange;
+      case 'overdue':
+      case '연체':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 
-  // 상환 정보 아이템 위젯
-  Widget _buildPaymentInfoItem(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 20),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
+  // 상태별 텍스트 반환
+  String _getStatusText(String status) {
+    switch (status.toLowerCase()) {
+      case 'paid':
+      case '납입완료':
+        return '완료';
+      case 'unpaid':
+      case '미납':
+        return '미납';
+      case 'overdue':
+      case '연체':
+        return '연체';
+      default:
+        return '대기';
+    }
   }
 }
