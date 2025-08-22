@@ -168,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     return const Center(child: CircularProgressIndicator());
                   }
                   return NoticeScreenLayout(
-                    groupName: 'parking-zone-code-02782',
+                    groupName: 'loan-countdown',
                     user: user,
                     detailAd: AdMasterWidget(
                       adType: AdType.banner,
@@ -198,6 +198,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildHomeTab() {
     return Consumer<LoanProvider>(
       builder: (context, loanProvider, child) {
+        // 초기화 상태 확인
+        if (!loanProvider.isInitialized) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
         final loans = loanProvider.loans;
 
         if (loans.isEmpty) {
@@ -206,28 +211,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
         return RefreshIndicator(
           onRefresh: () async {
-            await loanProvider.initializeBox();
+            try {
+              await loanProvider.initializeBox();
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('데이터 새로고침 중 오류가 발생했습니다: $e')),
+                );
+              }
+            }
           },
-          child: SingleChildScrollView(
+          child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              children: [
-                // D-Day 위젯
-                LoanDDayWidget(loans: loans),
+            children: [
+              // D-Day 위젯
+              if (loans.isNotEmpty) LoanDDayWidget(loans: loans),
 
-                // // 빠른 액션 카드
-                // _buildQuickActionsCard(),
+              // 요약 통계
+              if (loans.isNotEmpty) _buildSummaryStatsCard(loanProvider),
 
-                // 요약 통계
-                _buildSummaryStatsCard(loanProvider),
+              // 최근 대출
+              if (loans.isNotEmpty) _buildRecentLoansCard(loanProvider),
 
-                // 최근 대출
-                _buildRecentLoansCard(loanProvider),
-
-                // 다음 납부일
-                _buildNextPaymentCard(loanProvider),
-              ],
-            ),
+              // 다음 납부일
+              if (loans.isNotEmpty) _buildNextPaymentCard(loanProvider),
+            ],
           ),
         );
       },
@@ -237,7 +245,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildLoanListTab() {
     return Consumer<LoanProvider>(
       builder: (context, loanProvider, child) {
-        if (loanProvider.loans.isEmpty) {
+        if (!loanProvider.isInitialized || loanProvider.loans.isEmpty) {
           return _buildEmptyState();
         }
 
@@ -249,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildStatsTab() {
     return Consumer<LoanProvider>(
       builder: (context, loanProvider, child) {
-        if (loanProvider.loans.isEmpty) {
+        if (!loanProvider.isInitialized || loanProvider.loans.isEmpty) {
           return _buildEmptyState();
         }
 
@@ -260,16 +268,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: Column(
             children: [
               // 전체 요약
-              _buildStatsOverviewCard(stats),
+              if (stats.isNotEmpty) _buildStatsOverviewCard(stats),
 
               // 대출별 상세 통계
-              _buildLoanDetailsCard(loanProvider),
+              if (loanProvider.loans.isNotEmpty)
+                _buildLoanDetailsCard(loanProvider),
 
               // 상환 진행률
-              _buildRepaymentProgressCard(loanProvider),
+              if (loanProvider.loans.isNotEmpty)
+                _buildRepaymentProgressCard(loanProvider),
 
               // 이자 분석
-              _buildInterestAnalysisCard(loanProvider),
+              if (loanProvider.loans.isNotEmpty)
+                _buildInterestAnalysisCard(loanProvider),
             ],
           ),
         );
@@ -535,7 +546,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildRecentLoansCard(LoanProvider loanProvider) {
-    final recentLoans = loanProvider.loans.take(3).toList();
+    final loans = loanProvider.loans;
+    final recentLoans = loans.take(3).toList();
 
     return Container(
       margin: const EdgeInsets.all(16),
@@ -742,6 +754,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildStatsOverviewCard(Map<String, dynamic> stats) {
+    if (stats.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -760,7 +776,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Expanded(
                   child: _buildStatItem(
                     '총 대출금',
-                    formatCurrency(stats['totalAmount']),
+                    formatCurrency(stats['totalAmount'] ?? 0.0),
                     Icons.attach_money,
                     Colors.blue,
                   ),
@@ -768,7 +784,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Expanded(
                   child: _buildStatItem(
                     '총 이자',
-                    formatCurrency(stats['totalInterest']),
+                    formatCurrency(stats['totalInterest'] ?? 0.0),
                     Icons.percent,
                     Colors.orange,
                   ),

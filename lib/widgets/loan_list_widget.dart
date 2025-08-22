@@ -12,15 +12,43 @@ class LoanListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<LoanProvider>(
       builder: (context, loanProvider, child) {
-        if (loanProvider.loans.isEmpty) {
-          return const Center(child: Text('등록된 대출이 없습니다'));
+        // 초기화되지 않은 경우 로딩 표시
+        if (!loanProvider.isInitialized) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        // loans가 null이거나 비어있는 경우
+        final loans = loanProvider.loans;
+        if (loans == null || loans.isEmpty) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.account_balance_wallet_outlined,
+                  size: 64,
+                  color: Colors.grey,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  '등록된 대출이 없습니다',
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '새로운 대출을 추가해보세요',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ],
+            ),
+          );
         }
 
         return ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: loanProvider.loans.length,
+          itemCount: loans.length,
           itemBuilder: (context, index) {
-            final loan = loanProvider.loans[index];
+            final loan = loans[index];
             return _buildLoanCard(context, loan);
           },
         );
