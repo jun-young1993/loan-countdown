@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_common/flutter_common.dart';
 import 'package:flutter_common/models/payment_schedule/index.dart';
+import 'package:flutter_common/state/payment_schedule/payment_schedule_bloc.dart';
+import 'package:flutter_common/state/payment_schedule/payment_schedule_event.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:loan_countdown/providers/loan_provider.dart';
 import 'package:loan_countdown/utills/format_currency.dart';
 import 'package:flutter_common/state/payment_schedule/payment_schedule_page_bloc.dart';
 import '../models/loan.dart';
@@ -25,15 +28,21 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   List<MonthlyPayment>? _paymentSchedule;
   final bool _isLoadingSchedule = false;
   bool toggleOrder = false;
+  String? selectedPaymentStatus;
+  String? selectedMonth;
 
-  PaymentSchedulePageBloc? get _paymentScheduleBloc =>
+  PaymentSchedulePageBloc? get _paymentSchedulePageBloc =>
       context.read<PaymentSchedulePageBloc>();
+
+  PaymentScheduleBloc? get _paymentScheduleBloc =>
+      context.read<PaymentScheduleBloc>();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _paymentScheduleBloc?.add(ClearPaymentSchedule());
+    _paymentSchedulePageBloc?.add(ClearPaymentSchedule());
+    _paymentScheduleBloc?.add(GetPaymentStatus());
   }
 
   @override
@@ -47,7 +56,307 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
       toggleOrder = !toggleOrder;
     });
 
-    _paymentScheduleBloc?.add(ChangeOrder(toggleOrder ? 'DESC' : 'ASC'));
+    _paymentSchedulePageBloc?.add(ChangeOrder(toggleOrder ? 'DESC' : 'ASC'));
+  }
+
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            return AlertDialog(
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.filter_list,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text('필터 설정'),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 상환 상태 필터
+                  Row(
+                    children: [
+                      const Text('상환 상태: '),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedPaymentStatus,
+                          hint: const Text('상환 상태 선택'),
+                          items: [
+                            const DropdownMenuItem(
+                              value: null,
+                              child: Text('전체'),
+                            ),
+                            const DropdownMenuItem(
+                              value: 'PAID',
+                              child: Text('상환 완료'),
+                            ),
+                            const DropdownMenuItem(
+                              value: 'UNPAID',
+                              child: Text('미상환'),
+                            ),
+                            const DropdownMenuItem(
+                              value: 'OVERDUE',
+                              child: Text('연체'),
+                            ),
+                          ],
+                          onChanged: (String? value) {
+                            setDialogState(() {
+                              selectedPaymentStatus = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // 월별 필터
+                  Row(
+                    children: [
+                      const Text('월별 필터: '),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedMonth,
+                          hint: const Text('월 선택'),
+                          items: [
+                            const DropdownMenuItem(
+                              value: null,
+                              child: Text('전체'),
+                            ),
+                            ...List.generate(12, (index) {
+                              final month = index + 1;
+                              return DropdownMenuItem(
+                                value: month.toString(),
+                                child: Text('$month월'),
+                              );
+                            }),
+                          ],
+                          onChanged: (String? value) {
+                            setDialogState(() {
+                              selectedMonth = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('취소'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      // 필터 적용 로직
+                      if (selectedPaymentStatus != null ||
+                          selectedMonth != null) {
+                        // 필터가 적용되었음을 표시하기 위해 상태 업데이트
+                        // 실제 필터링은 Bloc에서 처리하거나 여기서 처리할 수 있습니다
+                        print(
+                          '필터 적용됨 - 상환 상태: $selectedPaymentStatus, 월: $selectedMonth',
+                        );
+                      }
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('적용'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setDialogState(() {
+                      selectedPaymentStatus = null;
+                      selectedMonth = null;
+                    });
+                  },
+                  child: const Text('초기화'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _clearFilters() {
+    setState(() {
+      selectedPaymentStatus = null;
+      selectedMonth = null;
+    });
+  }
+
+  String _getPaymentStatusText(String status) {
+    switch (status) {
+      case 'PAID':
+        return '상환 완료';
+      case 'UNPAID':
+        return '미상환';
+      case 'OVERDUE':
+        return '연체';
+      default:
+        return status;
+    }
+  }
+
+  void _showDeleteConfirmDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.red[600],
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                '대출 삭제',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${widget.loan.name} 대출을 삭제하시겠습니까?',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.red[600], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '이 작업은 되돌릴 수 없으며, 모든 대출 정보와 상환 스케줄이 영구적으로 삭제됩니다.',
+                        style: TextStyle(fontSize: 14, color: Colors.red[700]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('취소', style: TextStyle(fontSize: 16)),
+            ),
+            ElevatedButton(
+              onPressed: _deleteLoan,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[600],
+                foregroundColor: Colors.white,
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                '삭제',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteLoan() async {
+    try {
+      // 로딩 표시
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            content: Row(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 16),
+                Text('대출을 삭제하는 중...'),
+              ],
+            ),
+          );
+        },
+      );
+
+      // TODO: 실제 삭제 로직 구현
+      // await _loanRepository.deleteLoan(widget.loan.id);
+      await context.read<LoanProvider>().deleteLoan(widget.loan);
+      // 로딩 다이얼로그 닫기
+      Navigator.of(context).pop();
+
+      // 확인 다이얼로그 닫기
+      Navigator.of(context).pop();
+
+      // 성공 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 8),
+              Text('${widget.loan.name} 대출이 삭제되었습니다.'),
+            ],
+          ),
+          backgroundColor: Colors.green[600],
+          duration: const Duration(seconds: 3),
+        ),
+      );
+
+      // 홈 화면으로 돌아가기
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } catch (e) {
+      // 로딩 다이얼로그 닫기
+      Navigator.of(context).pop();
+
+      // 에러 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error, color: Colors.white),
+              const SizedBox(width: 8),
+              Text('대출 삭제 중 오류가 발생했습니다: $e'),
+            ],
+          ),
+          backgroundColor: Colors.red[600],
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
   }
 
   @override
@@ -61,6 +370,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         elevation: 0,
         actions: [
+          // 중도금 상환 버튼
           IconButton(
             onPressed: () {
               Navigator.push(
@@ -73,19 +383,29 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
             icon: const Icon(Icons.payment),
             tooltip: '중도금 상환',
           ),
+          // 삭제 버튼
+          IconButton(
+            onPressed: _showDeleteConfirmDialog,
+            icon: const Icon(Icons.delete_outline),
+            tooltip: '대출 삭제',
+            style: IconButton.styleFrom(foregroundColor: Colors.red[600]),
+          ),
         ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
             Tab(text: '기본 정보'),
             Tab(text: '상환 스케줄'),
-            Tab(text: '차트 분석'),
+            // Tab(text: '차트 분석'),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [_buildBasicInfoTab(), _buildScheduleTab(), _buildChartTab()],
+        children: [
+          _buildBasicInfoTab(), _buildScheduleTab(),
+          // , _buildChartTab()
+        ],
       ),
     );
   }
@@ -562,6 +882,28 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
             style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(16)),
           ),
         ),
+        const SizedBox(height: 12),
+        // 삭제 버튼
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _showDeleteConfirmDialog,
+            icon: Icon(Icons.delete_outline, color: Colors.red[600]),
+            label: Text(
+              '대출 삭제',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.red[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.all(16),
+              side: BorderSide(color: Colors.red[300]!),
+              backgroundColor: Colors.red[50],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -602,22 +944,22 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
         // 상환 스케줄 테이블 (무한 스크롤) - 더 많은 공간 확보
         Expanded(
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
+            margin: const EdgeInsets.symmetric(horizontal: 8),
             child: Stack(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(top: 10),
+                  padding: const EdgeInsets.only(top: 15),
                   child:
                       BlocBuilder<
                         PaymentSchedulePageBloc,
                         PagingState<int, PaymentSchedule>
                       >(
-                        bloc: _paymentScheduleBloc,
+                        bloc: _paymentSchedulePageBloc,
                         builder: (context, state) =>
                             PagedListView<int, PaymentSchedule>(
                               state: state,
                               fetchNextPage: () {
-                                _paymentScheduleBloc?.add(
+                                _paymentSchedulePageBloc?.add(
                                   FetchNextPaymentSchedule(widget.loan.id),
                                 );
                               },
@@ -678,6 +1020,74 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                             ),
                       ),
                 ),
+                // 필터 아이콘
+                // Positioned(
+                //   top: 0,
+                //   left: 8,
+                //   child: Container(
+                //     decoration: BoxDecoration(
+                //       color:
+                //           (selectedPaymentStatus != null ||
+                //               selectedMonth != null)
+                //           ? Theme.of(context).colorScheme.primary
+                //           : Theme.of(context).colorScheme.secondary,
+                //       borderRadius: BorderRadius.circular(20),
+                //       boxShadow: [
+                //         BoxShadow(
+                //           color: Colors.black.withOpacity(0.2),
+                //           blurRadius: 6,
+                //           offset: const Offset(0, 2),
+                //         ),
+                //       ],
+                //     ),
+                //     child: Material(
+                //       color: Colors.transparent,
+                //       child: InkWell(
+                //         onTap: _showFilterDialog,
+                //         borderRadius: BorderRadius.circular(20),
+                //         child: Container(
+                //           padding: const EdgeInsets.all(10),
+                //           child: Stack(
+                //             children: [
+                //               Icon(
+                //                 Icons.filter_list,
+                //                 color: Colors.white,
+                //                 size: 18,
+                //               ),
+                //               // 필터가 적용되었을 때 표시할 배지
+                //               if (selectedPaymentStatus != null ||
+                //                   selectedMonth != null)
+                //                 Positioned(
+                //                   right: -2,
+                //                   top: -2,
+                //                   child: Container(
+                //                     padding: const EdgeInsets.all(2),
+                //                     decoration: BoxDecoration(
+                //                       color: Colors.red,
+                //                       borderRadius: BorderRadius.circular(6),
+                //                     ),
+                //                     constraints: const BoxConstraints(
+                //                       minWidth: 12,
+                //                       minHeight: 12,
+                //                     ),
+                //                     child: const Text(
+                //                       '!',
+                //                       style: TextStyle(
+                //                         color: Colors.white,
+                //                         fontSize: 8,
+                //                         fontWeight: FontWeight.bold,
+                //                       ),
+                //                       textAlign: TextAlign.center,
+                //                     ),
+                //                   ),
+                //                 ),
+                //             ],
+                //           ),
+                //         ),
+                //       ),
+                //     ),
+                //   ),
+                // ),
                 // 정렬 버튼을 상환 스케줄 테이블 콘테이너 기준 오른쪽 상단에 배치
                 Positioned(
                   top: 0, // 헤더와 요약 카드 높이를 고려한 위치
@@ -735,21 +1145,82 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.table_chart,
-                color: Theme.of(context).colorScheme.primary,
+              Row(
+                children: [
+                  Icon(
+                    Icons.table_chart,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '상환 스케줄',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  const Spacer(),
+                  // 필터 초기화 버튼 (필터가 적용되었을 때만 표시)
+                  if (selectedPaymentStatus != null || selectedMonth != null)
+                    TextButton.icon(
+                      onPressed: _clearFilters,
+                      icon: const Icon(Icons.clear, size: 16),
+                      label: const Text('필터 초기화'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Text(
-                '상환 스케줄',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
+              // 필터 상태 표시
+              if (selectedPaymentStatus != null || selectedMonth != null) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    if (selectedPaymentStatus != null)
+                      Chip(
+                        label: Text(
+                          _getPaymentStatusText(selectedPaymentStatus!),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.1),
+                        deleteIcon: const Icon(Icons.close, size: 16),
+                        onDeleted: () {
+                          setState(() {
+                            selectedPaymentStatus = null;
+                          });
+                        },
+                      ),
+                    if (selectedMonth != null)
+                      Chip(
+                        label: Text(
+                          '${selectedMonth}월',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.secondary.withOpacity(0.1),
+                        deleteIcon: const Icon(Icons.close, size: 16),
+                        onDeleted: () {
+                          setState(() {
+                            selectedMonth = null;
+                          });
+                        },
+                      ),
+                  ],
                 ),
-              ),
+              ],
             ],
           ),
         ),

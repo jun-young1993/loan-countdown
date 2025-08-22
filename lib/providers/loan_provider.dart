@@ -117,7 +117,8 @@ class LoanProvider extends ChangeNotifier {
   // 대출 삭제
   Future<void> deleteLoan(Loan loan) async {
     try {
-      await loan.delete();
+      // await loan.delete();
+      await _loanRepository.deleteLoan(loan);
       await _loadLoans();
     } catch (e) {
       if (kDebugMode) {

@@ -1,6 +1,5 @@
 import 'package:flutter_common/network/dio_client.dart';
 import 'package:flutter_common/models/user/user.dart';
-import 'package:flutter_common/repositories/user_repository.dart';
 import 'package:loan_countdown/models/loan.dart';
 import 'package:loan_countdown/services/loan_calculator.dart';
 
@@ -13,6 +12,8 @@ abstract class LoanRepository {
     required int take,
     required String order,
   });
+
+  Future<void> deleteLoan(Loan loan);
 }
 
 class LoanDefaultRepository implements LoanRepository {
@@ -56,5 +57,10 @@ class LoanDefaultRepository implements LoanRepository {
     throw Exception(
       '[${response.statusCode}] Failed to fetch schedule: ${response.statusMessage ?? 'Unknown error'}',
     );
+  }
+
+  @override
+  Future<void> deleteLoan(Loan loan) async {
+    await dioClient.delete('/loans/${loan.id}');
   }
 }

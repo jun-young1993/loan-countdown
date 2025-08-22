@@ -8,6 +8,7 @@ import 'package:flutter_common/repositories/payment_schedule_repository.dart';
 import 'package:flutter_common/state/notice/notice_page_bloc.dart';
 import 'package:flutter_common/state/notice_group/notice_group_bloc.dart';
 import 'package:flutter_common/state/notice_reply/notice_reply_bloc.dart';
+import 'package:flutter_common/state/payment_schedule/payment_schedule_bloc.dart';
 import 'package:flutter_common/state/user/user_bloc.dart';
 import 'package:flutter_common/state/verification/verification_bloc.dart';
 import 'package:flutter_common/state/verification/verification_listener.dart';
@@ -134,6 +135,12 @@ void main() async {
           ),
           BlocProvider(
             create: (context) => PaymentSchedulePageBloc(
+              paymentScheduleRepository: context
+                  .read<PaymentScheduleRepository>(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => PaymentScheduleBloc(
               paymentScheduleRepository: context
                   .read<PaymentScheduleRepository>(),
             ),

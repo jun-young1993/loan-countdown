@@ -1,14 +1,17 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_common/constants/index.dart';
 import 'package:flutter_common/state/user/user_bloc.dart';
 import 'package:flutter_common/state/user/user_event.dart';
 import 'package:flutter_common/state/user/user_selector.dart';
 import 'package:flutter_common/widgets/ad/ad_master.dart';
 import 'package:flutter_common/widgets/ad/ad_open_app.dart';
 import 'package:flutter_common/widgets/layout/notice_screen_layout.dart';
+import 'package:flutter_common/widgets/layout/setting_screen_layout.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:loan_countdown/screens/add_loan_screen.dart';
+import 'package:loan_countdown/screens/setting_screen.dart';
 import 'package:loan_countdown/utills/format_currency.dart';
 import 'package:provider/provider.dart';
 import '../providers/loan_provider.dart';
@@ -92,57 +95,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             icon: const Icon(Icons.notifications),
             tooltip: '알림 설정',
           ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              setState(() {
-                _selectedSortBy = value;
-              });
-              context.read<LoanProvider>().sortLoans(value);
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingScreen()),
+              );
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'dday',
-                child: Row(
-                  children: [
-                    Icon(Icons.schedule, size: 20),
-                    SizedBox(width: 8),
-                    Text('D-Day 순'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'amount',
-                child: Row(
-                  children: [
-                    Icon(Icons.attach_money, size: 20),
-                    SizedBox(width: 8),
-                    Text('대출금액 순'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'interest',
-                child: Row(
-                  children: [
-                    Icon(Icons.percent, size: 20),
-                    SizedBox(width: 8),
-                    Text('이율 순'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'term',
-                child: Row(
-                  children: [
-                    Icon(Icons.calendar_month, size: 20),
-                    SizedBox(width: 8),
-                    Text('대출기간 순'),
-                  ],
-                ),
-              ),
-            ],
-            tooltip: '정렬',
-            child: const Icon(Icons.sort),
+            icon: const Icon(Icons.settings),
           ),
         ],
         bottom: TabBar(
