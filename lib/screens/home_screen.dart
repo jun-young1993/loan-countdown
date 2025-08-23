@@ -30,7 +30,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController _tabController;
-  String _selectedSortBy = 'dday';
+  final String _selectedSortBy = 'dday';
   bool _isLoading = true;
   UserBloc get userBloc => context.read<UserBloc>();
   bool isFloatingActionButtonVisible = true;

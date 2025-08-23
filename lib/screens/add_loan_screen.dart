@@ -376,7 +376,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
         final DateTime? picked = await showDatePicker(
           context: context,
           initialDate: _selectedDate,
-          firstDate: DateTime(2020),
+          firstDate: DateTime(1997),
           lastDate: DateTime(2030),
         );
         if (picked != null) {

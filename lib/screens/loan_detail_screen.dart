@@ -37,12 +37,15 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   PaymentScheduleBloc? get _paymentScheduleBloc =>
       context.read<PaymentScheduleBloc>();
 
+  LoanSummeryBloc? get _loanSummeryBloc => context.read<LoanSummeryBloc>();
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _paymentSchedulePageBloc?.add(ClearPaymentSchedule());
     _paymentScheduleBloc?.add(GetPaymentStatus());
+    _loanSummeryBloc?.add(GetLoanSummery(widget.loan.id));
   }
 
   @override
@@ -1205,7 +1208,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                     if (selectedMonth != null)
                       Chip(
                         label: Text(
-                          '${selectedMonth}월',
+                          '$selectedMonth월',
                           style: const TextStyle(fontSize: 12),
                         ),
                         backgroundColor: Theme.of(
@@ -1229,94 +1232,197 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   }
 
   // 상환 스케줄 요약 정보 카드 내용
+  // 상환 스케줄 요약 정보 카드 내용
   Widget _buildScheduleSummaryCardContent() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+    return LoanSummeryRepaymentSummarySelector((summary) {
+      if (summary == null) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+            ],
+          ),
+        ),
+        child: Column(
+          children: [
+            // 첫 번째 줄 (4개 항목)
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '총 상환금',
+                    formatCurrency(summary.totalRepaymentAmount),
+                    Icons.payment,
+                    Colors.blue,
+                    '대출 원금과 이자를 모두 합한 총 상환해야 할 금액입니다. 이는 대출 기간 동안 납부해야 하는 모든 금액의 합계를 의미합니다.',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '총 이자',
+                    formatCurrency(summary.totalInterestAmount),
+                    Icons.trending_up,
+                    Colors.orange,
+                    '대출 기간 동안 발생하는 모든 이자의 합계입니다. 원금에 비해 이자가 얼마나 되는지 파악할 수 있습니다.',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '월 평균',
+                    formatCurrency(summary.averageMonthlyPayment),
+                    Icons.percent,
+                    Colors.green,
+                    '매월 평균적으로 납부해야 하는 상환금액입니다. 원금과 이자를 포함한 월별 납부 금액의 평균값입니다.',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '남은 원금',
+                    formatCurrency(summary.remainingPrincipal),
+                    Icons.account_balance,
+                    Colors.red,
+                    '아직 상환하지 못한 원금의 잔액입니다. 이 금액에 이자가 추가되어 실제 납부해야 할 금액이 결정됩니다.',
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // 두 번째 줄 (4개 항목)
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '남은 이자',
+                    formatCurrency(summary.remainingInterest),
+                    Icons.trending_up,
+                    Colors.deepOrange,
+                    '앞으로 발생할 이자의 예상 금액입니다. 남은 원금을 기준으로 계산된 미래 이자 비용입니다.',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '상환 진행률',
+                    '${summary.repaymentProgress.toStringAsFixed(1)}%',
+                    Icons.pie_chart,
+                    Colors.teal,
+                    '전체 대출 중 얼마나 상환했는지를 백분율로 나타냅니다. 100%에 가까울수록 상환 완료에 가깝습니다.',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '이자 비율',
+                    '${summary.interestRatio.toStringAsFixed(1)}%',
+                    Icons.analytics,
+                    Colors.indigo,
+                    '총 상환금 중 이자가 차지하는 비율입니다. 이 비율이 높을수록 이자 부담이 크다는 의미입니다.',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '원금 비율',
+                    '${summary.principalRatio.toStringAsFixed(1)}%',
+                    Icons.account_balance_wallet,
+                    Colors.cyan,
+                    '총 상환금 중 원금이 차지하는 비율입니다. 이자 비율과 반대로, 원금 비율이 높을수록 이자 부담이 적습니다.',
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // 세 번째 줄 (4개 항목)
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '완료된 상환',
+                    '${summary.completedPayments}건',
+                    Icons.check_circle,
+                    Colors.lightGreen,
+                    '지금까지 성공적으로 상환 완료한 건수입니다. 정기적으로 납부한 상환 건수를 나타냅니다.',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '전체 상환',
+                    '${summary.totalPayments}건',
+                    Icons.list_alt,
+                    Colors.grey,
+                    '대출 기간 동안 상환해야 하는 총 건수입니다. 대출 기간(개월)과 동일한 수치입니다.',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '연체 건수',
+                    '${summary.overduePayments}건',
+                    Icons.warning,
+                    Colors.amber,
+                    '정해진 상환일을 지나서 납부한 건수입니다. 연체 시 추가 이자나 수수료가 발생할 수 있습니다.',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '다음 상환일',
+                    _formatDate(summary.nextPaymentDate),
+                    Icons.event,
+                    Colors.pink,
+                    '다음에 상환해야 하는 날짜입니다. 이 날짜까지 상환금을 납부해야 연체를 방지할 수 있습니다.',
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // 네 번째 줄 (2개 항목 - 중도상환 관련)
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '중도상환 총액',
+                    formatCurrency(summary.totalPrepaymentAmount),
+                    Icons.money_off,
+                    Colors.deepPurple,
+                    '정기 상환 외에 추가로 상환한 금액의 총합입니다. 중도상환을 통해 이자 부담을 줄일 수 있습니다.',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildSummaryGridItem(
+                    '절약 이자',
+                    formatCurrency(summary.prepaymentInterestSavings),
+                    Icons.savings,
+                    Colors.lightBlue,
+                    '중도상환을 통해 절약할 수 있는 이자 금액입니다. 원래 상환 계획보다 이자를 덜 내게 됩니다.',
+                  ),
+                ),
+                const Spacer(flex: 2), // 나머지 공간을 차지
+              ],
+            ),
           ],
         ),
-      ),
-      child: Column(
-        children: [
-          // 요약 정보 그리드 (2x2)
-          Row(
-            children: [
-              Expanded(
-                child: _buildSummaryGridItem(
-                  '총 상환금',
-                  _paymentSchedule?.isNotEmpty == true
-                      ? formatCurrency(
-                          _paymentSchedule!.fold(
-                            0.0,
-                            (sum, payment) => sum + payment.totalAmount,
-                          ),
-                        )
-                      : '계산 중...',
-                  Icons.payment,
-                  Colors.blue,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildSummaryGridItem(
-                  '총 이자',
-                  _paymentSchedule?.isNotEmpty == true
-                      ? formatCurrency(
-                          LoanCalculator.calculateTotalInterest(
-                            _paymentSchedule!,
-                          ),
-                        )
-                      : '계산 중...',
-                  Icons.trending_up,
-                  Colors.orange,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          Row(
-            children: [
-              Expanded(
-                child: _buildSummaryGridItem(
-                  '월 평균',
-                  _paymentSchedule?.isNotEmpty == true
-                      ? formatCurrency(
-                          _paymentSchedule!.fold(
-                                0.0,
-                                (sum, payment) => sum + payment.totalAmount,
-                              ) /
-                              _paymentSchedule!.length,
-                        )
-                      : '계산 중...',
-                  Icons.percent,
-                  Colors.green,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildSummaryGridItem(
-                  '총 개월',
-                  _paymentSchedule?.isNotEmpty == true
-                      ? '${_paymentSchedule!.length}개월'
-                      : '계산 중...',
-                  Icons.calendar_month,
-                  Colors.purple,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+      );
+    });
   }
 
   // 요약 그리드 아이템
@@ -1325,41 +1431,159 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
     String value,
     IconData icon,
     Color color,
+    String? description,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: color,
+    return GestureDetector(
+      onTap: () {
+        if (description != null && description.isNotEmpty) {
+          _showDescriptionAlert(title, description, value);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            // 설명이 있을 때 터치 가능함을 표시하는 인디케이터
+            if (description != null && description.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Icon(
+                  Icons.info_outline,
+                  size: 12,
+                  color: color.withOpacity(0.6),
+                ),
+              ),
+          ],
+        ),
       ),
+    );
+  }
+
+  // 설명 알럿 표시 함수
+  void _showDescriptionAlert(String title, String description, String value) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                color: Theme.of(context).colorScheme.primary,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 현재 값 표시
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.analytics,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '현재 값: $value',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              // 설명 텍스트
+              Text(
+                '설명',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                '확인',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -1818,8 +2042,8 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.year}년 ${date.month}월 ${date.day}일';
+  String _formatDate(DateTime date, {bool? ignoreYear = false}) {
+    return '${ignoreYear == true ? '' : '${date.year}/'}${date.month}/${date.day}';
   }
 
   // 상태별 색상 반환

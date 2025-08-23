@@ -145,6 +145,12 @@ void main() async {
                   .read<PaymentScheduleRepository>(),
             ),
           ),
+          BlocProvider(
+            create: (context) => LoanSummeryBloc(
+              paymentScheduleRepository: context
+                  .read<PaymentScheduleRepository>(),
+            ),
+          ),
         ],
         child: Builder(
           builder: (context) {

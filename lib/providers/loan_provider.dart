@@ -17,7 +17,7 @@ class LoanProvider extends ChangeNotifier {
 
   List<Loan> get loans {
     // _loans가 null이거나 초기화되지 않은 경우 빈 리스트 반환
-    if (!_isInitialized || _loans == null) {
+    if (!_isInitialized) {
       return [];
     }
     return _loans;
@@ -91,7 +91,12 @@ class LoanProvider extends ChangeNotifier {
   Future<void> addLoan(Loan loan) async {
     try {
       final user = await _userRepository.getUserInfo();
+
       await _loanRepository.addLoan(loan, user);
+      await _loadLoans();
+
+      // 잠시 대기 후 다시 로드 (강제 새로고침)
+      await Future.delayed(const Duration(milliseconds: 100));
       await _loadLoans();
     } catch (e) {
       if (kDebugMode) {

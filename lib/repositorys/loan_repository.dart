@@ -22,7 +22,9 @@ class LoanDefaultRepository implements LoanRepository {
 
   @override
   Future<void> addLoan(Loan loan, User user) async {
-    await dioClient.post('/loans', data: {...loan.toJson(), 'userId': user.id});
+    final data = loan.toJson();
+    data['id'] = null;
+    await dioClient.post('/loans', data: {...data, 'userId': user.id});
   }
 
   @override
