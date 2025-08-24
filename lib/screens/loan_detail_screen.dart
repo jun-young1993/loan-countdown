@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_common/flutter_common.dart';
 import 'package:flutter_common/models/payment_schedule/index.dart';
 import 'package:flutter_common/state/payment_schedule/payment_schedule_bloc.dart';
 import 'package:flutter_common/state/payment_schedule/payment_schedule_event.dart';
+import 'package:google_mobile_ads/src/ad_containers.dart' hide AdError;
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:loan_countdown/providers/loan_provider.dart';
 import 'package:loan_countdown/utills/format_currency.dart';
@@ -12,6 +15,49 @@ import '../models/loan.dart';
 import '../services/loan_calculator.dart';
 import 'prepayment_screen.dart';
 import 'graph_analysis_screen.dart';
+
+class LaonDetailInterstitialAdCallback extends AdCallback {
+  @override
+  void onAdClicked() {
+    // TODO: implement onAdClicked
+  }
+
+  @override
+  void onAdClosed() {
+    // TODO: implement onAdClosed
+  }
+
+  @override
+  void onAdFailedToLoad(AdError error) {
+    // TODO: implement onAdFailedToLoad
+  }
+
+  @override
+  void onAdLoaded() {
+    // TODO: implement onAdLoaded
+  }
+
+  @override
+  void onAdShown() {
+    // TODO: implement onAdShown
+  }
+
+  @override
+  void onInterstitialAdLoaded(InterstitialAd ad) {
+    // TODO: implement onInterstitialAdLoaded
+    ad.show();
+  }
+
+  @override
+  void onRewardedAdLoaded(RewardedAd ad) {
+    // TODO: implement onRewardedAdLoaded
+  }
+
+  @override
+  void onRewardedAdUserEarnedReward(RewardItem reward) {
+    // TODO: implement onRewardedAdUserEarnedReward
+  }
+}
 
 class LoanDetailScreen extends StatefulWidget {
   final Loan loan;
@@ -39,6 +85,8 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
 
   LoanSummeryBloc? get _loanSummeryBloc => context.read<LoanSummeryBloc>();
 
+  final AdMaster _adMaster = AdMaster();
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +94,13 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
     _paymentSchedulePageBloc?.add(ClearPaymentSchedule());
     _paymentScheduleBloc?.add(GetPaymentStatus());
     _loanSummeryBloc?.add(GetLoanSummery(widget.loan.id));
+
+    _adMaster.createInterstitialAd(
+      adUnitId: Platform.isIOS
+          ? 'ca-app-pub-4656262305566191/2167432446'
+          : 'ca-app-pub-4656262305566191/2167432446',
+      callback: LaonDetailInterstitialAdCallback(),
+    );
   }
 
   @override

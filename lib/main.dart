@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_common/constants/juny_constants.dart';
 import 'package:flutter_common/flutter_common.dart';
@@ -56,8 +57,8 @@ void main() async {
 
   DioClient dioClient = DioClient(
     baseUrl: JunyConstants.apiBaseUrl,
-    debugBaseUrl: 'http://localhost:3000',
-    useLogInterceptor: false,
+    debugBaseUrl: JunyConstants.apiBaseUrl,
+    useLogInterceptor: true,
   );
 
   runApp(
