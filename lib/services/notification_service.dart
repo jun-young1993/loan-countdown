@@ -33,11 +33,13 @@ class NotificationService {
 
     // 앱이 종료된 상태에서 알림을 탭하여 앱이 열릴 때
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      debugPrint('onMessageOpenedApp: $message');
       _handleMessage(message, isFromBackground: true);
     });
 
     // 포그라운드 메시지 처리
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      debugPrint('onMessage: $message');
       _handleMessage(message, isFromBackground: false);
     });
   }
@@ -60,9 +62,12 @@ class NotificationService {
       "@mipmap/ic_launcher",
     );
     const DarwinInitializationSettings ios = DarwinInitializationSettings(
-      requestSoundPermission: false,
-      requestBadgePermission: false,
-      requestAlertPermission: false,
+      requestSoundPermission: true,
+      requestBadgePermission: true,
+      requestAlertPermission: true,
+      defaultPresentAlert: true, // iOS에서 기본적으로 알림 표시
+      defaultPresentBadge: true, // iOS에서 기본적으로 배지 표시
+      defaultPresentSound: true, // iOS에서 기본적으로 소리 재생
     );
     const InitializationSettings settings = InitializationSettings(
       android: android,
@@ -99,12 +104,16 @@ class NotificationService {
           channelDescription: '기본 알림 채널',
           importance: Importance.high,
           priority: Priority.high,
+          showWhen: true,
         );
 
     const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
+      badgeNumber: 1,
+      presentAlert: true, // iOS에서 알림 표시
+      presentBadge: true, // iOS에서 배지 표시
+      presentSound: true, // iOS에서 소리 재생
+      interruptionLevel: InterruptionLevel.active, // iOS 15+ 알림 우선순위
+      categoryIdentifier: 'default', // 알림 카테고리
     );
 
     const NotificationDetails platformDetails = NotificationDetails(
@@ -112,12 +121,17 @@ class NotificationService {
       iOS: iosDetails,
     );
 
-    await _localNotifications.show(
-      0, // 알림 ID
-      title,
-      body,
-      platformDetails,
-      payload: payload,
-    );
+    try {
+      await _localNotifications.show(
+        DateTime.now().millisecondsSinceEpoch ~/ 1000, // 고유한 알림 ID
+        title,
+        body,
+        platformDetails,
+        payload: payload,
+      );
+      debugPrint('Local notification shown successfully');
+    } catch (e) {
+      debugPrint('Error showing local notification: $e');
+    }
   }
 }
