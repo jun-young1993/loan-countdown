@@ -10,9 +10,10 @@ class NotificationSettingsScreen extends StatefulWidget {
       _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
+class _NotificationSettingsScreenState
+    extends State<NotificationSettingsScreen> {
   final NotificationService _notificationService = NotificationService();
-  
+
   bool _paymentNotifications = true;
   bool _ddayNotifications = true;
   bool _prepaymentNotifications = true;
@@ -32,7 +33,8 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     setState(() {
       _paymentNotifications = prefs.getBool('payment_notifications') ?? true;
       _ddayNotifications = prefs.getBool('dday_notifications') ?? true;
-      _prepaymentNotifications = prefs.getBool('prepayment_notifications') ?? true;
+      _prepaymentNotifications =
+          prefs.getBool('prepayment_notifications') ?? true;
       _paymentDaysBefore = prefs.getInt('payment_days_before') ?? 7;
       _ddayDaysBefore = prefs.getInt('dday_days_before') ?? 7;
       _soundEnabled = prefs.getBool('sound_enabled') ?? true;
@@ -60,35 +62,13 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     }
   }
 
-  Future<void> _testNotification() async {
-    await _notificationService.showTestNotification(
-      title: '테스트 알림',
-      body: '알림이 정상적으로 작동합니다!',
-    );
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('테스트 알림을 전송했습니다.'),
-          backgroundColor: Colors.blue,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('알림 설정'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          IconButton(
-            onPressed: _testNotification,
-            icon: const Icon(Icons.notifications_active),
-            tooltip: '테스트 알림',
-          ),
-        ],
+        actions: [],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -222,7 +202,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                       // 권한 요청 로직
                       final prefs = await SharedPreferences.getInstance();
                       await prefs.setBool('permission_requested', true);
-                      
+
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -235,46 +215,46 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                     icon: const Icon(Icons.settings),
                   ),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.schedule),
-                  title: const Text('예약된 알림'),
-                  subtitle: const Text('현재 예약된 알림을 확인합니다'),
-                  trailing: IconButton(
-                    onPressed: () async {
-                      final notifications = await _notificationService.getPendingNotifications();
-                      
-                      if (mounted) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('예약된 알림'),
-                            content: SizedBox(
-                              width: double.maxFinite,
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: notifications.length,
-                                itemBuilder: (context, index) {
-                                  final notification = notifications[index];
-                                  return ListTile(
-                                    title: Text(notification.title ?? '제목 없음'),
-                                    subtitle: Text(notification.body ?? '내용 없음'),
-                                  );
-                                },
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('확인'),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                    },
-                    icon: const Icon(Icons.list),
-                  ),
-                ),
+                // ListTile(
+                //   leading: const Icon(Icons.schedule),
+                //   title: const Text('예약된 알림'),
+                //   subtitle: const Text('현재 예약된 알림을 확인합니다'),
+                //   trailing: IconButton(
+                //     onPressed: () async {
+                //       final notifications = await _notificationService.getPendingNotifications();
+
+                //       if (mounted) {
+                //         showDialog(
+                //           context: context,
+                //           builder: (context) => AlertDialog(
+                //             title: const Text('예약된 알림'),
+                //             content: SizedBox(
+                //               width: double.maxFinite,
+                //               child: ListView.builder(
+                //                 shrinkWrap: true,
+                //                 itemCount: notifications.length,
+                //                 itemBuilder: (context, index) {
+                //                   final notification = notifications[index];
+                //                   return ListTile(
+                //                     title: Text(notification.title ?? '제목 없음'),
+                //                     subtitle: Text(notification.body ?? '내용 없음'),
+                //                   );
+                //                 },
+                //               ),
+                //             ),
+                //             actions: [
+                //               TextButton(
+                //                 onPressed: () => Navigator.pop(context),
+                //                 child: const Text('확인'),
+                //               ),
+                //             ],
+                //           ),
+                //         );
+                //       }
+                //     },
+                //     icon: const Icon(Icons.list),
+                //   ),
+                // ),
               ],
             ),
             const SizedBox(height: 32),
@@ -314,10 +294,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ...children,

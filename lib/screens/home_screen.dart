@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     AdOpenApp(
       adMaster: AdMaster(),
       adUnitId: Platform.isAndroid
-          ? 'ca-app-pub-4656262305566191/7156139470'
+          ? 'ca-app-pub-4656262305566191/1011097597'
           : 'ca-app-pub-4656262305566191/7323648092',
     ).listenToAppStateChanges();
   }
@@ -133,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     detailAd: AdMasterWidget(
                       adType: AdType.banner,
                       adUnitId: 'ca-app-pub-4656262305566191/8099310198',
-                      androidAdUnitId: 'ca-app-pub-4656262305566191/7046079402',
+                      androidAdUnitId: 'ca-app-pub-4656262305566191/9951371931',
                       builder: (state, ad) {
                         return state.isLoaded && ad != null
                             ? AdWidget(ad: ad)

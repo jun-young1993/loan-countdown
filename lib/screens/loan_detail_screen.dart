@@ -98,7 +98,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
     _adMaster.createInterstitialAd(
       adUnitId: Platform.isIOS
           ? 'ca-app-pub-4656262305566191/2167432446'
-          : 'ca-app-pub-4656262305566191/2167432446',
+          : 'ca-app-pub-4656262305566191/7548569879',
       callback: LaonDetailInterstitialAdCallback(),
     );
   }

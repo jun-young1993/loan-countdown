@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_common/constants/juny_constants.dart';
@@ -15,6 +17,7 @@ import 'package:flutter_common/state/verification/verification_bloc.dart';
 import 'package:flutter_common/state/verification/verification_listener.dart';
 import 'package:flutter_common/state/payment_schedule/payment_schedule_page_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:loan_countdown/firebase_options.dart';
 import 'package:loan_countdown/repositorys/loan_repository.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,8 +46,13 @@ void main() async {
   // Hive 박스 열기
   await Hive.openBox<Loan>('loans');
 
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   // 알림 서비스 초기화
   await NotificationService().initialize();
+  // FCM 토큰 가져오기
+  final String? fcmToken = await FirebaseMessaging.instance.getToken();
+  debugPrint('fcmToken: $fcmToken');
 
   await EasyLocalization.ensureInitialized();
 
@@ -107,8 +115,10 @@ void main() async {
                 AppConfigBloc(appRepository: context.read<AppRepository>()),
           ),
           BlocProvider(
-            create: (context) =>
-                UserBloc(userRepository: context.read<UserRepository>()),
+            create: (context) => UserBloc(
+              userRepository: context.read<UserRepository>(),
+              fcmToken: fcmToken,
+            ),
           ),
           BlocProvider(
             create: (context) => VerificationBloc(

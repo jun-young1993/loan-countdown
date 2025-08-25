@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "317463472451",
+    "project_id": "loan-countdown",
+    "storage_bucket": "loan-countdown.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:317463472451:android:767f45df76d1b966aa67f6",
+        "android_client_info": {
+          "package_name": "com.example.loan_countdown.loan_countdown"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdqQ3_FCdYO9BfbkbzxLohcuwfbwlBen8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
