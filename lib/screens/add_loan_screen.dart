@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_common/common_il8n.dart';
+import 'package:flutter_common/flutter_common.dart';
 import 'package:flutter_common/models/user/user.dart';
 import 'package:provider/provider.dart';
 import '../providers/loan_provider.dart';
@@ -42,7 +43,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(Tr.loan.addLoan),
+        title: Text(Tr.loan.addLoan.tr()),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Form(
@@ -160,7 +161,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                             Icon(Icons.schedule, color: Colors.grey[600]),
                             const SizedBox(width: 8),
                             Text(
-                              Tr.loan.loanPeriod,
+                              Tr.loan.loanPeriod.tr(),
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
@@ -232,11 +233,11 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                                 items: [
                                   DropdownMenuItem(
                                     value: false,
-                                    child: Text(Tr.loan.months),
+                                    child: Text(Tr.loan.months.tr()),
                                   ),
                                   DropdownMenuItem(
                                     value: true,
-                                    child: Text(Tr.loan.year),
+                                    child: Text(Tr.loan.year.tr()),
                                   ),
                                 ],
                                 onChanged: (value) {
@@ -332,7 +333,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                         ),
                       )
                     : Text(
-                        Tr.loan.addLoan,
+                        Tr.loan.addLoan.tr(),
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -410,7 +411,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     return DropdownButtonFormField<RepaymentType>(
       value: _selectedRepaymentType,
       decoration: InputDecoration(
-        labelText: Tr.loan.repaymentMethod,
+        labelText: Tr.loan.repaymentMethod.tr(),
         border: OutlineInputBorder(),
         prefixIcon: Icon(Icons.payment),
       ),
@@ -440,7 +441,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
             Icon(Icons.calendar_month, color: Colors.grey[600]),
             const SizedBox(width: 8),
             Text(
-              Tr.loan.repaymentDate + ' ' + Tr.loan.optional,
+              '${Tr.loan.repaymentDate.tr()} ${Tr.loan.optional.tr()}',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -463,7 +464,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                       ? int.parse(_paymentDayController.text)
                       : null,
                   decoration: InputDecoration(
-                    hintText: Tr.loan.repaymentDate,
+                    hintText: Tr.loan.repaymentDate.tr(),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(
                       horizontal: 16,
@@ -473,7 +474,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                   items: List.generate(31, (index) => index + 1).map((day) {
                     return DropdownMenuItem(
                       value: day,
-                      child: Text('$day${Tr.loan.day}'),
+                      child: Text('$day${Tr.loan.day.tr()}'),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -488,7 +489,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                   validator: (value) {
                     if (value != null) {
                       if (value < 1 || value > 31) {
-                        return Tr.loan.repaymentMethodDescription;
+                        return Tr.loan.repaymentMethodDescription.tr();
                       }
                     }
                     return null;
@@ -516,7 +517,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 8, left: 16),
             child: Text(
-              Tr.loan.repaymentDateDescription,
+              Tr.loan.repaymentDateDescription.tr(),
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -567,7 +568,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(Tr.loan.loanAddSuccess),
+              content: Text(Tr.loan.loanAddSuccess.tr()),
               backgroundColor: Colors.green,
             ),
           );
@@ -577,7 +578,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(Tr.loan.error + ': $e'),
+              content: Text('${Tr.loan.error.tr()}: $e'),
               backgroundColor: Colors.red,
             ),
           );

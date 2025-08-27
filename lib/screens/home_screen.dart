@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_common/common_il8n.dart';
 import 'package:flutter_common/constants/index.dart';
+import 'package:flutter_common/flutter_common.dart';
 import 'package:flutter_common/state/user/user_bloc.dart';
 import 'package:flutter_common/state/user/user_event.dart';
 import 'package:flutter_common/state/user/user_selector.dart';
@@ -78,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          Tr.loan.appTitle,
+          Tr.loan.appTitle.tr(),
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -94,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               );
             },
             icon: const Icon(Icons.notifications),
-            tooltip: Tr.loan.notificationSetting,
+            tooltip: Tr.loan.notificationSetting.tr(),
           ),
           IconButton(
             onPressed: () {
@@ -109,10 +110,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: Tr.loan.home),
-            Tab(text: Tr.loan.loanList),
-            Tab(text: Tr.loan.statistics),
-            Tab(text: Tr.loan.community),
+            Tab(text: Tr.loan.home.tr()),
+            Tab(text: Tr.loan.loanList.tr()),
+            Tab(text: Tr.loan.statistics.tr()),
+            Tab(text: Tr.loan.community.tr()),
           ],
         ),
       ),
@@ -177,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             } catch (e) {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(Tr.loan.refreshError + ': $e')),
+                  SnackBar(content: Text('${Tr.loan.refreshError.tr()}: $e')),
                 );
               }
             }
@@ -268,7 +269,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           const SizedBox(height: 24),
           Text(
-            Tr.loan.emptyLoan,
+            Tr.loan.emptyLoan.tr(),
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -277,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           const SizedBox(height: 16),
           Text(
-            Tr.loan.newLoanDescription,
+            Tr.loan.newLoanDescription.tr(),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
@@ -301,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 );
               },
               icon: const Icon(Icons.add),
-              label: Text(Tr.loan.firstLoanAdd),
+              label: Text(Tr.loan.firstLoanAdd.tr()),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -444,7 +445,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    Tr.loan.summaryStatistics,
+                    Tr.loan.summaryStatistics.tr(),
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -454,7 +455,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 children: [
                   Expanded(
                     child: _buildStatItem(
-                      Tr.loan.allLoan,
+                      Tr.loan.allLoan.tr(),
                       '${loans.length}건',
                       Icons.account_balance,
                       Colors.blue,
@@ -462,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   Expanded(
                     child: _buildStatItem(
-                      Tr.loan.activeLoan,
+                      Tr.loan.activeLoan.tr(),
                       '${activeLoans.length}건',
                       Icons.trending_up,
                       Colors.green,
@@ -470,7 +471,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   Expanded(
                     child: _buildStatItem(
-                      Tr.loan.expiredLoan,
+                      Tr.loan.expiredLoan.tr(),
                       '${expiredLoans.length}건',
                       Icons.check_circle,
                       Colors.orange,
@@ -483,7 +484,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 children: [
                   Expanded(
                     child: _buildStatItem(
-                      Tr.loan.totalLoanAmount,
+                      Tr.loan.totalLoanAmount.tr(),
                       formatCurrency(totalAmount),
                       Icons.attach_money,
                       Colors.purple,
@@ -491,7 +492,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   Expanded(
                     child: _buildStatItem(
-                      Tr.loan.averageInterest,
+                      Tr.loan.averageInterest.tr(),
                       '${avgInterest.toStringAsFixed(2)}%',
                       Icons.percent,
                       Colors.red,
@@ -528,7 +529,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    Tr.loan.recentAddLoan,
+                    Tr.loan.recentAddLoan.tr(),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -542,7 +543,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: Padding(
                     padding: EdgeInsets.all(20),
                     child: Text(
-                      Tr.loan.emptyLoan,
+                      Tr.loan.emptyLoan.tr(),
                       style: const TextStyle(color: Colors.grey),
                     ),
                   ),
@@ -612,7 +613,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              isStarted ? Tr.loan.inProgress : 'D-${daysUntilStart}',
+              isStarted ? Tr.loan.inProgress.tr() : 'D-$daysUntilStart',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
@@ -653,7 +654,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    Tr.loan.next + ' ' + Tr.loan.paymentDate,
+                    '${Tr.loan.next.tr()} ${Tr.loan.paymentDate.tr()}',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -731,7 +732,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              Tr.loan.totalSummary,
+              Tr.loan.totalSummary.tr(),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -739,7 +740,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               children: [
                 Expanded(
                   child: _buildStatItem(
-                    Tr.loan.totalLoanAmount,
+                    Tr.loan.totalLoanAmount.tr(),
                     formatCurrency(stats['totalAmount'] ?? 0.0),
                     Icons.attach_money,
                     Colors.blue,
@@ -747,7 +748,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 Expanded(
                   child: _buildStatItem(
-                    Tr.loan.totalInterest,
+                    Tr.loan.totalInterest.tr(),
                     formatCurrency(stats['totalInterest'] ?? 0.0),
                     Icons.percent,
                     Colors.orange,
@@ -773,7 +774,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              Tr.loan.loanDetail,
+              Tr.loan.loanDetail.tr(),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -825,7 +826,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
               Text(
-                '${loan.term}${Tr.loan.months}',
+                '${loan.term}${Tr.loan.months.tr()}',
                 style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
             ],
@@ -846,15 +847,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              Tr.loan.repaymentProgress,
+              Tr.loan.repaymentProgress.tr(),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Center(
               child: Text(
-                Tr.loan.repaymentProgressDescription +
-                    '\n' +
-                    Tr.loan.updateSoon,
+                '${Tr.loan.repaymentProgressDescription.tr()}\n${Tr.loan.updateSoon.tr()}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.grey),
               ),
@@ -876,13 +875,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              Tr.loan.interestAnalysis,
+              Tr.loan.interestAnalysis.tr(),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Center(
               child: Text(
-                Tr.loan.interestAnalysisDescription + '\n' + Tr.loan.updateSoon,
+                '${Tr.loan.interestAnalysisDescription.tr()}\n${Tr.loan.updateSoon.tr()}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.grey),
               ),

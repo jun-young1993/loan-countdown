@@ -12,14 +12,7 @@ class SettingScreen extends StatelessWidget {
         title: const Text('앱 정보'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.arrow_back),
-          ),
-        ],
+        actions: [],
       ),
       body: const SettingScreenLayout(appKey: AppKeys.loanCountdown),
     );

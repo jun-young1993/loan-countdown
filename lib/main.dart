@@ -190,7 +190,7 @@ class MyApp extends StatelessWidget {
         userRepository: context.read<UserRepository>(),
       ),
       child: MaterialApp(
-        title: '대출 D-Day & 상환 추적',
+        title: Tr.loan.appTitle.tr(),
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
