@@ -117,138 +117,138 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
     _paymentSchedulePageBloc?.add(ChangeOrder(toggleOrder ? 'DESC' : 'ASC'));
   }
 
-  void _showFilterDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setDialogState) {
-            return AlertDialog(
-              title: Row(
-                children: [
-                  Icon(
-                    Icons.filter_list,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  const Text('필터 설정'),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 상환 상태 필터
-                  Row(
-                    children: [
-                      const Text('상환 상태: '),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: selectedPaymentStatus,
-                          hint: const Text('상환 상태 선택'),
-                          items: [
-                            const DropdownMenuItem(
-                              value: null,
-                              child: Text('전체'),
-                            ),
-                            const DropdownMenuItem(
-                              value: 'PAID',
-                              child: Text('상환 완료'),
-                            ),
-                            const DropdownMenuItem(
-                              value: 'UNPAID',
-                              child: Text('미상환'),
-                            ),
-                            const DropdownMenuItem(
-                              value: 'OVERDUE',
-                              child: Text('연체'),
-                            ),
-                          ],
-                          onChanged: (String? value) {
-                            setDialogState(() {
-                              selectedPaymentStatus = value;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // 월별 필터
-                  Row(
-                    children: [
-                      const Text('월별 필터: '),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: selectedMonth,
-                          hint: const Text('월 선택'),
-                          items: [
-                            const DropdownMenuItem(
-                              value: null,
-                              child: Text('전체'),
-                            ),
-                            ...List.generate(12, (index) {
-                              final month = index + 1;
-                              return DropdownMenuItem(
-                                value: month.toString(),
-                                child: Text('$month월'),
-                              );
-                            }),
-                          ],
-                          onChanged: (String? value) {
-                            setDialogState(() {
-                              selectedMonth = value;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('취소'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      // 필터 적용 로직
-                      if (selectedPaymentStatus != null ||
-                          selectedMonth != null) {
-                        // 필터가 적용되었음을 표시하기 위해 상태 업데이트
-                        // 실제 필터링은 Bloc에서 처리하거나 여기서 처리할 수 있습니다
-                        print(
-                          '필터 적용됨 - 상환 상태: $selectedPaymentStatus, 월: $selectedMonth',
-                        );
-                      }
-                    });
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('적용'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    setDialogState(() {
-                      selectedPaymentStatus = null;
-                      selectedMonth = null;
-                    });
-                  },
-                  child: const Text('초기화'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
+  // void _showFilterDialog() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return StatefulBuilder(
+  //         builder: (BuildContext context, StateSetter setDialogState) {
+  //           return AlertDialog(
+  //             title: Row(
+  //               children: [
+  //                 Icon(
+  //                   Icons.filter_list,
+  //                   color: Theme.of(context).colorScheme.primary,
+  //                 ),
+  //                 const SizedBox(width: 8),
+  //                 const Text('필터 설정'),
+  //               ],
+  //             ),
+  //             content: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               children: [
+  //                 // 상환 상태 필터
+  //                 Row(
+  //                   children: [
+  //                     const Text('상환 상태: '),
+  //                     const SizedBox(width: 8),
+  //                     Expanded(
+  //                       child: DropdownButton<String>(
+  //                         isExpanded: true,
+  //                         value: selectedPaymentStatus,
+  //                         hint: const Text('상환 상태 선택'),
+  //                         items: [
+  //                           const DropdownMenuItem(
+  //                             value: null,
+  //                             child: Text('전체'),
+  //                           ),
+  //                           const DropdownMenuItem(
+  //                             value: 'PAID',
+  //                             child: Text('상환 완료'),
+  //                           ),
+  //                           const DropdownMenuItem(
+  //                             value: 'UNPAID',
+  //                             child: Text('미상환'),
+  //                           ),
+  //                           const DropdownMenuItem(
+  //                             value: 'OVERDUE',
+  //                             child: Text('연체'),
+  //                           ),
+  //                         ],
+  //                         onChanged: (String? value) {
+  //                           setDialogState(() {
+  //                             selectedPaymentStatus = value;
+  //                           });
+  //                         },
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 const SizedBox(height: 16),
+  //                 // 월별 필터
+  //                 Row(
+  //                   children: [
+  //                     const Text('월별 필터: '),
+  //                     const SizedBox(width: 8),
+  //                     Expanded(
+  //                       child: DropdownButton<String>(
+  //                         isExpanded: true,
+  //                         value: selectedMonth,
+  //                         hint: const Text('월 선택'),
+  //                         items: [
+  //                           const DropdownMenuItem(
+  //                             value: null,
+  //                             child: Text('전체'),
+  //                           ),
+  //                           ...List.generate(12, (index) {
+  //                             final month = index + 1;
+  //                             return DropdownMenuItem(
+  //                               value: month.toString(),
+  //                               child: Text('$month월'),
+  //                             );
+  //                           }),
+  //                         ],
+  //                         onChanged: (String? value) {
+  //                           setDialogState(() {
+  //                             selectedMonth = value;
+  //                           });
+  //                         },
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ],
+  //             ),
+  //             actions: [
+  //               TextButton(
+  //                 onPressed: () {
+  //                   Navigator.of(context).pop();
+  //                 },
+  //                 child: const Text('취소'),
+  //               ),
+  //               TextButton(
+  //                 onPressed: () {
+  //                   setState(() {
+  //                     // 필터 적용 로직
+  //                     if (selectedPaymentStatus != null ||
+  //                         selectedMonth != null) {
+  //                       // 필터가 적용되었음을 표시하기 위해 상태 업데이트
+  //                       // 실제 필터링은 Bloc에서 처리하거나 여기서 처리할 수 있습니다
+  //                       print(
+  //                         '필터 적용됨 - 상환 상태: $selectedPaymentStatus, 월: $selectedMonth',
+  //                       );
+  //                     }
+  //                   });
+  //                   Navigator.of(context).pop();
+  //                 },
+  //                 child: const Text('적용'),
+  //               ),
+  //               TextButton(
+  //                 onPressed: () {
+  //                   setDialogState(() {
+  //                     selectedPaymentStatus = null;
+  //                     selectedMonth = null;
+  //                   });
+  //                 },
+  //                 child: const Text('초기화'),
+  //               ),
+  //             ],
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 
   void _clearFilters() {
     setState(() {

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_common/common_il8n.dart';
 import 'package:flutter_common/constants/index.dart';
 import 'package:flutter_common/state/user/user_bloc.dart';
 import 'package:flutter_common/state/user/user_event.dart';
@@ -76,8 +77,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          '대출 D-Day & 상환 추적',
+        title: Text(
+          Tr.loan.appTitle,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -93,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               );
             },
             icon: const Icon(Icons.notifications),
-            tooltip: '알림 설정',
+            tooltip: Tr.loan.notificationSetting,
           ),
           IconButton(
             onPressed: () {
@@ -108,10 +109,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: '홈'),
-            Tab(text: '대출 목록'),
-            Tab(text: '통계'),
-            Tab(text: '커뮤니티'),
+            Tab(text: Tr.loan.home),
+            Tab(text: Tr.loan.loanList),
+            Tab(text: Tr.loan.statistics),
+            Tab(text: Tr.loan.community),
           ],
         ),
       ),
@@ -176,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             } catch (e) {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('데이터 새로고침 중 오류가 발생했습니다: $e')),
+                  SnackBar(content: Text(Tr.loan.refreshError + ': $e')),
                 );
               }
             }
@@ -267,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           const SizedBox(height: 24),
           Text(
-            '등록된 대출이 없습니다',
+            Tr.loan.emptyLoan,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -276,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           const SizedBox(height: 16),
           Text(
-            '새로운 대출을 추가하여\nD-Day와 상환 일정을 관리해보세요',
+            Tr.loan.newLoanDescription,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
@@ -300,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 );
               },
               icon: const Icon(Icons.add),
-              label: const Text('첫 번째 대출 추가하기'),
+              label: Text(Tr.loan.firstLoanAdd),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -316,103 +317,103 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildQuickActionsCard() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.flash_on,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    '빠른 액션',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildQuickActionButton(
-                      icon: Icons.add,
-                      label: '대출 추가',
-                      onTap: () {
-                        // FAB 클릭 효과
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('오른쪽 하단의 + 버튼을 눌러주세요!'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildQuickActionButton(
-                      icon: Icons.notifications,
-                      label: '알림 설정',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const NotificationSettingsScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildQuickActionsCard() {
+  //   return Container(
+  //     margin: const EdgeInsets.all(16),
+  //     child: Card(
+  //       elevation: 2,
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+  //       child: Padding(
+  //         padding: const EdgeInsets.all(20),
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Row(
+  //               children: [
+  //                 Icon(
+  //                   Icons.flash_on,
+  //                   color: Theme.of(context).colorScheme.primary,
+  //                 ),
+  //                 const SizedBox(width: 8),
+  //                 const Text(
+  //                   '빠른 액션',
+  //                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  //                 ),
+  //               ],
+  //             ),
+  //             const SizedBox(height: 16),
+  //             Row(
+  //               children: [
+  //                 Expanded(
+  //                   child: _buildQuickActionButton(
+  //                     icon: Icons.add,
+  //                     label: '대출 추가',
+  //                     onTap: () {
+  //                       // FAB 클릭 효과
+  //                       ScaffoldMessenger.of(context).showSnackBar(
+  //                         const SnackBar(
+  //                           content: Text('오른쪽 하단의 + 버튼을 눌러주세요!'),
+  //                           duration: Duration(seconds: 2),
+  //                         ),
+  //                       );
+  //                     },
+  //                   ),
+  //                 ),
+  //                 const SizedBox(width: 16),
+  //                 Expanded(
+  //                   child: _buildQuickActionButton(
+  //                     icon: Icons.notifications,
+  //                     label: '알림 설정',
+  //                     onTap: () {
+  //                       Navigator.push(
+  //                         context,
+  //                         MaterialPageRoute(
+  //                           builder: (context) =>
+  //                               const NotificationSettingsScreen(),
+  //                         ),
+  //                       );
+  //                     },
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildQuickActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 32, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildQuickActionButton({
+  //   required IconData icon,
+  //   required String label,
+  //   required VoidCallback onTap,
+  // }) {
+  //   return InkWell(
+  //     onTap: onTap,
+  //     borderRadius: BorderRadius.circular(12),
+  //     child: Container(
+  //       padding: const EdgeInsets.all(16),
+  //       decoration: BoxDecoration(
+  //         color: Theme.of(context).colorScheme.surface,
+  //         borderRadius: BorderRadius.circular(12),
+  //         border: Border.all(
+  //           color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+  //         ),
+  //       ),
+  //       child: Column(
+  //         children: [
+  //           Icon(icon, size: 32, color: Theme.of(context).colorScheme.primary),
+  //           const SizedBox(height: 8),
+  //           Text(
+  //             label,
+  //             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildSummaryStatsCard(LoanProvider loanProvider) {
     final loans = loanProvider.loans;
@@ -442,8 +443,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    '요약 통계',
+                  Text(
+                    Tr.loan.summaryStatistics,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -453,7 +454,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 children: [
                   Expanded(
                     child: _buildStatItem(
-                      '전체 대출',
+                      Tr.loan.allLoan,
                       '${loans.length}건',
                       Icons.account_balance,
                       Colors.blue,
@@ -461,7 +462,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   Expanded(
                     child: _buildStatItem(
-                      '활성 대출',
+                      Tr.loan.activeLoan,
                       '${activeLoans.length}건',
                       Icons.trending_up,
                       Colors.green,
@@ -469,7 +470,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   Expanded(
                     child: _buildStatItem(
-                      '만료 대출',
+                      Tr.loan.expiredLoan,
                       '${expiredLoans.length}건',
                       Icons.check_circle,
                       Colors.orange,
@@ -482,7 +483,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 children: [
                   Expanded(
                     child: _buildStatItem(
-                      '총 대출금',
+                      Tr.loan.totalLoanAmount,
                       formatCurrency(totalAmount),
                       Icons.attach_money,
                       Colors.purple,
@@ -490,7 +491,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   Expanded(
                     child: _buildStatItem(
-                      '평균 이율',
+                      Tr.loan.averageInterest,
                       '${avgInterest.toStringAsFixed(2)}%',
                       Icons.percent,
                       Colors.red,
@@ -526,20 +527,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    '최근 추가된 대출',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Text(
+                    Tr.loan.recentAddLoan,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               if (recentLoans.isEmpty)
-                const Center(
+                Center(
                   child: Padding(
                     padding: EdgeInsets.all(20),
                     child: Text(
-                      '아직 대출이 없습니다',
-                      style: TextStyle(color: Colors.grey),
+                      Tr.loan.emptyLoan,
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   ),
                 )
@@ -608,7 +612,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              isStarted ? '진행중' : 'D-$daysUntilStart',
+              isStarted ? Tr.loan.inProgress : 'D-${daysUntilStart}',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
@@ -648,8 +652,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    '다음 납부일',
+                  Text(
+                    Tr.loan.next + ' ' + Tr.loan.paymentDate,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -726,16 +730,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '전체 요약',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              Tr.loan.totalSummary,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
                   child: _buildStatItem(
-                    '총 대출금',
+                    Tr.loan.totalLoanAmount,
                     formatCurrency(stats['totalAmount'] ?? 0.0),
                     Icons.attach_money,
                     Colors.blue,
@@ -743,7 +747,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 Expanded(
                   child: _buildStatItem(
-                    '총 이자',
+                    Tr.loan.totalInterest,
                     formatCurrency(stats['totalInterest'] ?? 0.0),
                     Icons.percent,
                     Colors.orange,
@@ -768,9 +772,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '대출별 상세',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              Tr.loan.loanDetail,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             ...loans.map((loan) => _buildLoanDetailItem(loan)),
@@ -821,7 +825,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
               Text(
-                '${loan.term}개월',
+                '${loan.term}${Tr.loan.months}',
                 style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
             ],
@@ -841,16 +845,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '상환 진행률',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              Tr.loan.repaymentProgress,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            const Center(
+            Center(
               child: Text(
-                '상환 진행률 기능은\n추후 업데이트 예정입니다',
+                Tr.loan.repaymentProgressDescription +
+                    '\n' +
+                    Tr.loan.updateSoon,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey),
+                style: const TextStyle(color: Colors.grey),
               ),
             ),
           ],
@@ -869,16 +875,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '이자 분석',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              Tr.loan.interestAnalysis,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            const Center(
+            Center(
               child: Text(
-                '이자 분석 기능은\n추후 업데이트 예정입니다',
+                Tr.loan.interestAnalysisDescription + '\n' + Tr.loan.updateSoon,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey),
+                style: const TextStyle(color: Colors.grey),
               ),
             ),
           ],

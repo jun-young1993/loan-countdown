@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_common/common_il8n.dart';
 import 'package:flutter_common/models/user/user.dart';
 import 'package:provider/provider.dart';
 import '../providers/loan_provider.dart';
@@ -41,7 +42,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('새 대출 추가'),
+        title: Text(Tr.loan.addLoan),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Form(
@@ -159,7 +160,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                             Icon(Icons.schedule, color: Colors.grey[600]),
                             const SizedBox(width: 8),
                             Text(
-                              '대출 기간',
+                              Tr.loan.loanPeriod,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
@@ -228,14 +229,14 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                 ),
-                                items: const [
+                                items: [
                                   DropdownMenuItem(
                                     value: false,
-                                    child: Text('개월'),
+                                    child: Text(Tr.loan.months),
                                   ),
                                   DropdownMenuItem(
                                     value: true,
-                                    child: Text('년'),
+                                    child: Text(Tr.loan.year),
                                   ),
                                 ],
                                 onChanged: (value) {
@@ -330,8 +331,8 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                           ),
                         ),
                       )
-                    : const Text(
-                        '대출 추가',
+                    : Text(
+                        Tr.loan.addLoan,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -408,8 +409,8 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
   Widget _buildRepaymentTypeSelector() {
     return DropdownButtonFormField<RepaymentType>(
       value: _selectedRepaymentType,
-      decoration: const InputDecoration(
-        labelText: '상환 방식',
+      decoration: InputDecoration(
+        labelText: Tr.loan.repaymentMethod,
         border: OutlineInputBorder(),
         prefixIcon: Icon(Icons.payment),
       ),
@@ -439,7 +440,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
             Icon(Icons.calendar_month, color: Colors.grey[600]),
             const SizedBox(width: 8),
             Text(
-              '상환일 (선택사항)',
+              Tr.loan.repaymentDate + ' ' + Tr.loan.optional,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -461,8 +462,8 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                   value: _paymentDayController.text.isNotEmpty
                       ? int.parse(_paymentDayController.text)
                       : null,
-                  decoration: const InputDecoration(
-                    hintText: '상환일 선택',
+                  decoration: InputDecoration(
+                    hintText: Tr.loan.repaymentDate,
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(
                       horizontal: 16,
@@ -470,7 +471,10 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                     ),
                   ),
                   items: List.generate(31, (index) => index + 1).map((day) {
-                    return DropdownMenuItem(value: day, child: Text('$day일'));
+                    return DropdownMenuItem(
+                      value: day,
+                      child: Text('$day${Tr.loan.day}'),
+                    );
                   }).toList(),
                   onChanged: (value) {
                     setState(() {
@@ -484,7 +488,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                   validator: (value) {
                     if (value != null) {
                       if (value < 1 || value > 31) {
-                        return '1일부터 31일까지 선택해주세요';
+                        return Tr.loan.repaymentMethodDescription;
                       }
                     }
                     return null;
@@ -512,7 +516,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 8, left: 16),
             child: Text(
-              '※ 해당 월에 지정 납입일이 없는 경우에는 그 달의 말일을 납입일로 설정됩니다.',
+              Tr.loan.repaymentDateDescription,
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -562,8 +566,8 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('대출이 성공적으로 추가되었습니다!'),
+            SnackBar(
+              content: Text(Tr.loan.loanAddSuccess),
               backgroundColor: Colors.green,
             ),
           );
@@ -573,7 +577,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('오류가 발생했습니다: $e'),
+              content: Text(Tr.loan.error + ': $e'),
               backgroundColor: Colors.red,
             ),
           );

@@ -1,4 +1,4 @@
-package com.example.loan_countdown.loan_countdown
+package juny.loan_countdown
 
 import io.flutter.embedding.android.FlutterActivity
 
