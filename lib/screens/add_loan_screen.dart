@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_common/common_il8n.dart';
 import 'package:flutter_common/flutter_common.dart';
 import 'package:flutter_common/models/user/user.dart';
+import 'package:loan_countdown/utills/format_currency.dart';
 import 'package:provider/provider.dart';
 import '../providers/loan_provider.dart';
 import '../models/loan.dart';
@@ -59,15 +60,17 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                     // 대출명
                     _buildTextField(
                       controller: _nameController,
-                      label: '대출명',
-                      hint: '예: 주택담보대출, 신용대출',
+                      label: Tr.loan.loanName.tr(),
+                      hint: Tr.loan.loanNameHint.tr(),
                       icon: Icons.account_balance,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return '대출명을 입력해주세요';
+                          return Tr.loan.loanNameValidationEmpty.tr();
                         }
                         if (value.trim().length < 2) {
-                          return '대출명은 2자 이상 입력해주세요';
+                          return Tr.loan.loanNameValidationMinLength.tr(
+                            namedArgs: {'minLength': '2', 'maxLength': '20'},
+                          );
                         }
                         return null;
                       },
@@ -77,26 +80,30 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                     // 대출금액
                     _buildTextField(
                       controller: _amountController,
-                      label: '대출금액',
+                      label: Tr.loan.loanAmount.tr(),
                       hint: '10000000',
                       icon: Icons.attach_money,
-                      suffixText: '원',
+                      suffixText: Tr.loan.currencyUnitString.tr(),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return '대출금액을 입력해주세요';
+                          return Tr.loan.loanAmountValidationEmpty.tr();
                         }
                         final amount = double.tryParse(
                           value.replaceAll(',', ''),
                         );
                         if (amount == null) {
-                          return '올바른 금액을 입력해주세요';
+                          return Tr.loan.loanAmountValidationInvalid.tr();
                         }
                         if (amount < 1000000) {
-                          return '최소 100만원 이상 입력해주세요';
+                          return Tr.loan.loanAmountValidationMin.tr(
+                            namedArgs: {'min': formatCurrency(1000000)},
+                          );
                         }
                         if (amount > 1000000000000) {
-                          return '최대 1조원까지 입력 가능합니다';
+                          return Tr.loan.loanAmountValidationMax.tr(
+                            namedArgs: {'max': formatCurrency(1000000000000)},
+                          );
                         }
                         return null;
                       },
@@ -125,7 +132,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                     // 이율
                     _buildTextField(
                       controller: _interestRateController,
-                      label: '연 이율',
+                      label: Tr.loan.annualInterestRate.tr(),
                       hint: '3.5',
                       icon: Icons.percent,
                       suffixText: '%',
@@ -134,17 +141,22 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return '이율을 입력해주세요';
+                          return Tr.loan.annualInterestRateValidationEmpty.tr();
                         }
                         final rate = double.tryParse(value);
                         if (rate == null) {
-                          return '올바른 이율을 입력해주세요';
+                          return Tr.loan.annualInterestRateValidationInvalid
+                              .tr();
                         }
                         if (rate < 0) {
-                          return '이율은 0% 이상이어야 합니다';
+                          return Tr.loan.annualInterestRateValidationMin.tr(
+                            namedArgs: {'min': '0'},
+                          );
                         }
                         if (rate > 30) {
-                          return '이율은 30% 이하여야 합니다';
+                          return Tr.loan.annualInterestRateValidationMax.tr(
+                            namedArgs: {'max': '30'},
+                          );
                         }
                         return null;
                       },
@@ -189,20 +201,26 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                                 keyboardType: TextInputType.number,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return '대출 기간을 입력해주세요';
+                                    return Tr.loan.loanPeriodValidationEmpty
+                                        .tr();
                                   }
                                   final term = int.tryParse(value);
                                   if (term == null) {
-                                    return '올바른 기간을 입력해주세요';
+                                    return Tr.loan.loanPeriodValidationInvalid
+                                        .tr();
                                   }
                                   if (term < 1) {
-                                    return '대출 기간은 1 이상이어야 합니다';
+                                    return Tr.loan.loanPeriodValidationMin.tr(
+                                      namedArgs: {'min': '1'},
+                                    );
                                   }
                                   if (_isTermInYears && term > 50) {
-                                    return '대출 기간은 50년 이하여야 합니다';
+                                    return Tr.loan.loanPeriodValidationMaxYear
+                                        .tr(namedArgs: {'max': '50'});
                                   }
                                   if (!_isTermInYears && term > 600) {
-                                    return '대출 기간은 600개월 이하여야 합니다';
+                                    return Tr.loan.loanPeriodValidationMaxMonths
+                                        .tr(namedArgs: {'max': '600'});
                                   }
                                   return null;
                                 },
@@ -268,10 +286,13 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                     // 초기 납부금 (선택사항)
                     _buildTextField(
                       controller: _initialPaymentController,
-                      label: '초기 납부금 (선택사항)',
-                      hint: '계약금, 선이자 등',
+                      label:
+                          Tr.loan.initialRepayment.tr() +
+                          ' ' +
+                          Tr.loan.optional.tr(),
+                      hint: Tr.loan.contractDeposit.tr(),
                       icon: Icons.payment,
-                      suffixText: '원',
+                      suffixText: Tr.loan.currencyUnitString.tr(),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
@@ -279,7 +300,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                             value.replaceAll(',', ''),
                           );
                           if (amount == null || amount < 0) {
-                            return '올바른 금액을 입력해주세요';
+                            return Tr.loan.loanAmountValidationInvalid.tr();
                           }
                         }
                         return null;
