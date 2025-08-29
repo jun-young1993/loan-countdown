@@ -1,3 +1,5 @@
+import 'package:flutter_common/common_il8n.dart';
+import 'package:flutter_common/flutter_common.dart';
 import 'package:hive/hive.dart';
 
 part 'loan.g.dart';
@@ -257,22 +259,22 @@ extension RepaymentTypeExtension on RepaymentType {
   String get displayName {
     switch (this) {
       case RepaymentType.equalInstallment:
-        return '원리금균등상환';
+        return Tr.loan.equalPrincipalAndInterestRepayment.tr();
       case RepaymentType.equalPrincipal:
-        return '원금균등상환';
+        return Tr.loan.equalPrincipalRepayment.tr();
       case RepaymentType.bulletPayment:
-        return '만기일시상환';
+        return Tr.loan.maturityDateRepayment.tr();
     }
   }
 
   String get description {
     switch (this) {
       case RepaymentType.equalInstallment:
-        return '매월 동일한 금액을 납부하는 방식';
+        return Tr.loan.equalPrincipalAndInterestRepaymentDescription.tr();
       case RepaymentType.equalPrincipal:
-        return '매월 동일한 원금과 이자를 납부하는 방식';
+        return Tr.loan.equalPrincipalRepaymentDescription.tr();
       case RepaymentType.bulletPayment:
-        return '이자만 납부하고 원금은 만기에 일시 상환하는 방식';
+        return Tr.loan.maturityDateRepaymentDescription.tr();
     }
   }
 }

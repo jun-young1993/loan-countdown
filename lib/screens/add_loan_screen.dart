@@ -287,9 +287,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                     _buildTextField(
                       controller: _initialPaymentController,
                       label:
-                          Tr.loan.initialRepayment.tr() +
-                          ' ' +
-                          Tr.loan.optional.tr(),
+                          '${Tr.loan.initialRepayment.tr()} ${Tr.loan.optional.tr()}',
                       hint: Tr.loan.contractDeposit.tr(),
                       icon: Icons.payment,
                       suffixText: Tr.loan.currencyUnitString.tr(),

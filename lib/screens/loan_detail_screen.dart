@@ -451,9 +451,9 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: '기본 정보'),
-            Tab(text: '상환 스케줄'),
+          tabs: [
+            Tab(text: Tr.loan.basicInfo.tr()),
+            Tab(text: Tr.loan.repaymentSchedule.tr()),
             // Tab(text: '차트 분석'),
           ],
         ),
@@ -521,23 +521,23 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
     if (isStarted) {
       statusColor = Colors.green;
       statusIcon = Icons.play_arrow;
-      statusText = '진행 중';
-      subtitle = 'D-Day +$elapsedDays일';
+      statusText = Tr.loan.inProgress.tr();
+      subtitle = 'D-Day +$elapsedDays ${Tr.loan.day.tr()}';
     } else if (daysUntilStart <= 7) {
       statusColor = Colors.red;
       statusIcon = Icons.warning;
-      statusText = '임박';
-      subtitle = 'D-Day까지 $daysUntilStart일';
+      statusText = Tr.loan.near.tr();
+      subtitle = 'D-Day -$daysUntilStart ${Tr.loan.day.tr()}';
     } else if (daysUntilStart <= 30) {
       statusColor = Colors.orange;
       statusIcon = Icons.schedule;
-      statusText = '준비중';
-      subtitle = 'D-Day까지 $daysUntilStart일';
+      statusText = Tr.loan.preparing.tr();
+      subtitle = 'D-Day -$daysUntilStart ${Tr.loan.day.tr()}';
     } else {
       statusColor = Colors.blue;
       statusIcon = Icons.schedule;
-      statusText = '대기중';
-      subtitle = 'D-Day까지 $daysUntilStart일';
+      statusText = Tr.loan.waiting.tr();
+      subtitle = 'D-Day -$daysUntilStart ${Tr.loan.day.tr()}';
     }
 
     return Card(
@@ -591,7 +591,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    isStarted ? '진행중' : 'D-$daysUntilStart',
+                    isStarted ? Tr.loan.inProgress.tr() : 'D-$daysUntilStart',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -637,25 +637,33 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
     IconData icon,
     Color color,
   ) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: color,
+    return Container(
+      alignment: Alignment.centerLeft,
+      width: 100,
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+            textAlign: TextAlign.left,
+            maxLines: 1, // 최대 3줄까지 표시
+            overflow: TextOverflow.ellipsis,
           ),
-          textAlign: TextAlign.center,
-        ),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-          textAlign: TextAlign.center,
-        ),
-      ],
+          Text(
+            label,
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            textAlign: TextAlign.left,
+            maxLines: 1, // 최대 3줄까지 표시
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 
@@ -672,8 +680,8 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
               children: [
                 Icon(Icons.info, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 8),
-                const Text(
-                  '기본 정보',
+                Text(
+                  Tr.loan.basicInfo.tr(),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
