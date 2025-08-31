@@ -34,6 +34,7 @@ class LoanProvider extends ChangeNotifier {
   // Hive 박스 초기화
   Future<void> initializeBox() async {
     try {
+      _loans = [];
       _loanBox = Hive.box<Loan>('loans');
       await _loadLoans();
       _isInitialized = true;

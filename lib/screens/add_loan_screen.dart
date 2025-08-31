@@ -439,7 +439,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
           value: type,
           child: Text(
             type.displayName,
-            style: const TextStyle(fontWeight: FontWeight.w500),
+            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
           ),
         );
       }).toList(),

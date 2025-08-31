@@ -35,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final String _selectedSortBy = 'dday';
   bool _isLoading = true;
   UserBloc get userBloc => context.read<UserBloc>();
+  LoanProvider get loanProvider => context.read<LoanProvider>();
   bool isFloatingActionButtonVisible = true;
 
   @override
@@ -66,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _initializeProvider() async {
-    await context.read<LoanProvider>().initializeBox();
+    await loanProvider.initializeBox();
     if (mounted) {
       setState(() {
         _isLoading = false;
@@ -101,7 +102,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SettingScreen()),
+                MaterialPageRoute(
+                  builder: (context) => SettingScreen(
+                    onUserDeleted: (user) {
+                      _initializeProvider();
+                    },
+                  ),
+                ),
               );
             },
             icon: const Icon(Icons.settings),
