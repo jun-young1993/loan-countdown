@@ -105,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 MaterialPageRoute(
                   builder: (context) => SettingScreen(
                     onUserDeleted: (user) {
-                      _initializeProvider();
+                      loanProvider.initializeBox();
                     },
                   ),
                 ),
@@ -173,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         }
 
         final loans = loanProvider.loans;
-
+        print('loans: $loans');
         if (loans.isEmpty) {
           return _buildEmptyState();
         }
