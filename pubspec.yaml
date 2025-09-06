@@ -32,8 +32,8 @@ dependencies:
     sdk: flutter
 
   flutter_common:
-    # path: /Users/junyoungkim/Desktop/junyoung/app/source/flutter_common
-    path: C:/Users/junyoung/junyoung/source/flutter_common
+    path: /Users/junyoungkim/Desktop/junyoung/app/source/flutter_common
+    # path: C:/Users/junyoung/junyoung/source/flutter_common
     # git:
     #   url: https://github.com/jun-young1993/flutter_common.git
     #   ref: v1.0.61

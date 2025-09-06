@@ -66,7 +66,9 @@ void main() async {
   DioClient dioClient = DioClient(
     baseUrl: JunyConstants.apiBaseUrl,
     debugBaseUrl: JunyConstants.apiBaseUrl,
-    useLogInterceptor: false,
+    useLogInterceptor: true,
+    appKey: AppKeys.loanCountdown,
+    sharedPreferences: sharedPreferences,
   );
 
   runApp(
