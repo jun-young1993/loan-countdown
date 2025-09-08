@@ -30,7 +30,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final adMaster = AdMaster();
-  await adMaster.initialize(AdConfig());
+  await adMaster.initialize(
+    AdConfig(isTestMode: Platform.isAndroid ? true : kDebugMode),
+  );
 
   // Hive 초기화
   await Hive.initFlutter();
