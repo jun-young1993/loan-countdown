@@ -1578,7 +1578,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text(
+              child: Text(
                 Tr.loan.confirm.tr(),
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
@@ -1848,7 +1848,9 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                   sections: [
                     PieChartSectionData(
                       value: totalPrincipal,
-                      title: Tr.loan.principal.tr()'\n${formatCurrency(totalPrincipal)}',
+                      title:
+                          Tr.loan.principal.tr() +
+                          '\n${formatCurrency(totalPrincipal)}',
                       color: Colors.blue,
                       radius: 80,
                       titleStyle: const TextStyle(
@@ -1859,7 +1861,9 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                     ),
                     PieChartSectionData(
                       value: totalInterest,
-                      title: Tr.loan.interest.tr()+'\n${formatCurrency(totalInterest)}',
+                      title:
+                          Tr.loan.interest.tr() +
+                          '\n${formatCurrency(totalInterest)}',
                       color: Colors.orange,
                       radius: 80,
                       titleStyle: const TextStyle(
@@ -1919,7 +1923,11 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          return Text(Tr.loan.month.tr(namedArgs: {'month' : value.toInt().toString()}));
+                          return Text(
+                            Tr.loan.month.tr(
+                              namedArgs: {'month': value.toInt().toString()},
+                            ),
+                          );
                         },
                       ),
                     ),
@@ -1967,7 +1975,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-           Text(
+            Text(
               Tr.loan.remainingAmountTrend.tr(),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
@@ -1991,7 +1999,11 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          return Text(Tr.loan.month.tr(namedArgs: {'month' : value.toInt().toString()}));
+                          return Text(
+                            Tr.loan.month.tr(
+                              namedArgs: {'month': value.toInt().toString()},
+                            ),
+                          );
                         },
                       ),
                     ),
