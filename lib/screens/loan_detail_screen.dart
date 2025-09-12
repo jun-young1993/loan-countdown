@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_common/constants/size_constants.dart';
 import 'package:flutter_common/flutter_common.dart';
 import 'package:flutter_common/models/payment_schedule/index.dart';
 import 'package:flutter_common/state/payment_schedule/payment_schedule_bloc.dart';
@@ -117,138 +118,138 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
     _paymentSchedulePageBloc?.add(ChangeOrder(toggleOrder ? 'DESC' : 'ASC'));
   }
 
-  // void _showFilterDialog() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return StatefulBuilder(
-  //         builder: (BuildContext context, StateSetter setDialogState) {
-  //           return AlertDialog(
-  //             title: Row(
-  //               children: [
-  //                 Icon(
-  //                   Icons.filter_list,
-  //                   color: Theme.of(context).colorScheme.primary,
-  //                 ),
-  //                 const SizedBox(width: 8),
-  //                 const Text('필터 설정'),
-  //               ],
-  //             ),
-  //             content: Column(
-  //               mainAxisSize: MainAxisSize.min,
-  //               children: [
-  //                 // 상환 상태 필터
-  //                 Row(
-  //                   children: [
-  //                     const Text('상환 상태: '),
-  //                     const SizedBox(width: 8),
-  //                     Expanded(
-  //                       child: DropdownButton<String>(
-  //                         isExpanded: true,
-  //                         value: selectedPaymentStatus,
-  //                         hint: const Text('상환 상태 선택'),
-  //                         items: [
-  //                           const DropdownMenuItem(
-  //                             value: null,
-  //                             child: Text('전체'),
-  //                           ),
-  //                           const DropdownMenuItem(
-  //                             value: 'PAID',
-  //                             child: Text('상환 완료'),
-  //                           ),
-  //                           const DropdownMenuItem(
-  //                             value: 'UNPAID',
-  //                             child: Text('미상환'),
-  //                           ),
-  //                           const DropdownMenuItem(
-  //                             value: 'OVERDUE',
-  //                             child: Text('연체'),
-  //                           ),
-  //                         ],
-  //                         onChanged: (String? value) {
-  //                           setDialogState(() {
-  //                             selectedPaymentStatus = value;
-  //                           });
-  //                         },
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //                 const SizedBox(height: 16),
-  //                 // 월별 필터
-  //                 Row(
-  //                   children: [
-  //                     const Text('월별 필터: '),
-  //                     const SizedBox(width: 8),
-  //                     Expanded(
-  //                       child: DropdownButton<String>(
-  //                         isExpanded: true,
-  //                         value: selectedMonth,
-  //                         hint: const Text('월 선택'),
-  //                         items: [
-  //                           const DropdownMenuItem(
-  //                             value: null,
-  //                             child: Text('전체'),
-  //                           ),
-  //                           ...List.generate(12, (index) {
-  //                             final month = index + 1;
-  //                             return DropdownMenuItem(
-  //                               value: month.toString(),
-  //                               child: Text('$month월'),
-  //                             );
-  //                           }),
-  //                         ],
-  //                         onChanged: (String? value) {
-  //                           setDialogState(() {
-  //                             selectedMonth = value;
-  //                           });
-  //                         },
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ],
-  //             ),
-  //             actions: [
-  //               TextButton(
-  //                 onPressed: () {
-  //                   Navigator.of(context).pop();
-  //                 },
-  //                 child: const Text('취소'),
-  //               ),
-  //               TextButton(
-  //                 onPressed: () {
-  //                   setState(() {
-  //                     // 필터 적용 로직
-  //                     if (selectedPaymentStatus != null ||
-  //                         selectedMonth != null) {
-  //                       // 필터가 적용되었음을 표시하기 위해 상태 업데이트
-  //                       // 실제 필터링은 Bloc에서 처리하거나 여기서 처리할 수 있습니다
-  //                       print(
-  //                         '필터 적용됨 - 상환 상태: $selectedPaymentStatus, 월: $selectedMonth',
-  //                       );
-  //                     }
-  //                   });
-  //                   Navigator.of(context).pop();
-  //                 },
-  //                 child: const Text('적용'),
-  //               ),
-  //               TextButton(
-  //                 onPressed: () {
-  //                   setDialogState(() {
-  //                     selectedPaymentStatus = null;
-  //                     selectedMonth = null;
-  //                   });
-  //                 },
-  //                 child: const Text('초기화'),
-  //               ),
-  //             ],
-  //           );
-  //         },
-  //       );
-  //     },
-  //   );
-  // }
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            return AlertDialog(
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.filter_list,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text('필터 설정'),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 상환 상태 필터
+                  Row(
+                    children: [
+                      const Text('상환 상태: '),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedPaymentStatus,
+                          hint: const Text('상환 상태 선택'),
+                          items: [
+                            const DropdownMenuItem(
+                              value: null,
+                              child: Text('전체'),
+                            ),
+                            const DropdownMenuItem(
+                              value: 'PAID',
+                              child: Text('상환 완료'),
+                            ),
+                            const DropdownMenuItem(
+                              value: 'UNPAID',
+                              child: Text('미상환'),
+                            ),
+                            const DropdownMenuItem(
+                              value: 'OVERDUE',
+                              child: Text('연체'),
+                            ),
+                          ],
+                          onChanged: (String? value) {
+                            setDialogState(() {
+                              selectedPaymentStatus = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // 월별 필터
+                  Row(
+                    children: [
+                      const Text('월별 필터: '),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedMonth,
+                          hint: const Text('월 선택'),
+                          items: [
+                            const DropdownMenuItem(
+                              value: null,
+                              child: Text('전체'),
+                            ),
+                            ...List.generate(12, (index) {
+                              final month = index + 1;
+                              return DropdownMenuItem(
+                                value: month.toString(),
+                                child: Text('$month월'),
+                              );
+                            }),
+                          ],
+                          onChanged: (String? value) {
+                            setDialogState(() {
+                              selectedMonth = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('취소'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      // 필터 적용 로직
+                      if (selectedPaymentStatus != null ||
+                          selectedMonth != null) {
+                        // 필터가 적용되었음을 표시하기 위해 상태 업데이트
+                        // 실제 필터링은 Bloc에서 처리하거나 여기서 처리할 수 있습니다
+                        print(
+                          '필터 적용됨 - 상환 상태: $selectedPaymentStatus, 월: $selectedMonth',
+                        );
+                      }
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('적용'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setDialogState(() {
+                      selectedPaymentStatus = null;
+                      selectedMonth = null;
+                    });
+                  },
+                  child: const Text('초기화'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   void _clearFilters() {
     setState(() {
@@ -1097,40 +1098,29 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                 Positioned(
                   top: 0, // 헤더와 요약 카드 높이를 고려한 위치
                   right: 0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(25),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildPositionedButton(
+                        icon: Icon(
+                          Icons.tune,
+                          color: Colors.white,
+                          size: SizeConstants.getSmallIconSize(context),
                         ),
-                      ],
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: _toggleOrder,
-                        borderRadius: BorderRadius.circular(25),
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                toggleOrder
-                                    ? Icons.arrow_downward
-                                    : Icons.arrow_upward,
-                                color: Colors.white,
-                                size: 10,
-                              ),
-                            ],
-                          ),
-                        ),
+                        onTap: _showFilterDialog,
                       ),
-                    ),
+                      const SizedBox(width: 24),
+                      _buildPositionedButton(
+                        icon: Icon(
+                          toggleOrder
+                              ? Icons.arrow_downward
+                              : Icons.arrow_upward,
+                          color: Colors.white,
+                          size: SizeConstants.getSmallIconSize(context),
+                        ),
+                        onTap: _toggleOrder,
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -1138,6 +1128,36 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPositionedButton({
+    required Icon icon,
+    required Function() onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(25),
+          child: Container(
+            padding: SizeConstants.getSmallButtonPadding(context),
+            child: icon,
+          ),
+        ),
+      ),
     );
   }
 
