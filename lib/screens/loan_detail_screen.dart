@@ -132,7 +132,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
-                  const Text('필터 설정'),
+                  Text(Tr.common.filterSetting.tr()),
                 ],
               ),
               content: Column(
@@ -149,9 +149,9 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                           value: selectedPaymentStatus,
                           hint: const Text('상환 상태 선택'),
                           items: [
-                            const DropdownMenuItem(
+                             DropdownMenuItem(
                               value: null,
-                              child: Text('전체'),
+                              child: Text(Tr.common.all.tr()),
                             ),
                             const DropdownMenuItem(
                               value: 'PAID',
@@ -261,11 +261,11 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   String _getPaymentStatusText(String status) {
     switch (status) {
       case 'PAID':
-        return '상환 완료';
+        return Tr.loan.repaymentComplete.tr();
       case 'UNPAID':
-        return '미상환';
+        return Tr.loan.repaymentNotYet.tr();
       case 'OVERDUE':
-        return '연체';
+        return Tr.loan.repaymentOverdue.tr();
       default:
         return status;
     }
@@ -284,8 +284,8 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                 size: 28,
               ),
               const SizedBox(width: 12),
-              const Text(
-                '대출 삭제',
+              Text(
+                Tr.loan.deleteLoan.tr(),
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ],
@@ -295,7 +295,9 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${widget.loan.name} 대출을 삭제하시겠습니까?',
+                Tr.loan.deleteLoanConfirmation.tr(
+                  namedArgs: {'name': widget.loan.name},
+                ),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -315,7 +317,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '이 작업은 되돌릴 수 없으며, 모든 대출 정보와 상환 스케줄이 영구적으로 삭제됩니다.',
+                        Tr.loan.deleteLoanDescription.tr(),
                         style: TextStyle(fontSize: 14, color: Colors.red[700]),
                       ),
                     ),
@@ -329,7 +331,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('취소', style: TextStyle(fontSize: 16)),
+              child: Text(Tr.loan.cancel.tr(), style: TextStyle(fontSize: 16)),
             ),
             ElevatedButton(
               onPressed: _deleteLoan,
@@ -341,8 +343,8 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text(
-                '삭제',
+              child: Text(
+                Tr.loan.delete.tr(),
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
@@ -359,12 +361,12 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return const AlertDialog(
+          return AlertDialog(
             content: Row(
               children: [
                 CircularProgressIndicator(),
                 SizedBox(width: 16),
-                Text('대출을 삭제하는 중...'),
+                Text(Tr.loan.deletingLoan.tr()),
               ],
             ),
           );
@@ -387,7 +389,11 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
             children: [
               const Icon(Icons.check_circle, color: Colors.white),
               const SizedBox(width: 8),
-              Text('${widget.loan.name} 대출이 삭제되었습니다.'),
+              Text(
+                Tr.loan.deleteLoanSuccess.tr(
+                namedArgs: {'name': widget.loan.name},
+              ),
+              
             ],
           ),
           backgroundColor: Colors.green[600],
@@ -408,7 +414,9 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
             children: [
               const Icon(Icons.error, color: Colors.white),
               const SizedBox(width: 8),
-              Text('대출 삭제 중 오류가 발생했습니다: $e'),
+              Text(
+                Tr.loan.deleteLoanError.tr(namedArgs: {'error': e.toString()}),
+              ),
             ],
           ),
           backgroundColor: Colors.red[600],
@@ -440,13 +448,13 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
               );
             },
             icon: const Icon(Icons.payment),
-            tooltip: '중도금 상환',
+            tooltip: Tr.loan.prepayment.tr(),
           ),
           // 삭제 버튼
           IconButton(
             onPressed: _showDeleteConfirmDialog,
             icon: const Icon(Icons.delete_outline),
-            tooltip: '대출 삭제',
+            tooltip: Tr.loan.deleteLoan.tr(),
             style: IconButton.styleFrom(foregroundColor: Colors.red[600]),
           ),
         ],
@@ -1869,8 +1877,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                     PieChartSectionData(
                       value: totalPrincipal,
                       title:
-                          Tr.loan.principal.tr() +
-                          '\n${formatCurrency(totalPrincipal)}',
+                          '${Tr.loan.principal.tr()}\n${formatCurrency(totalPrincipal)}',
                       color: Colors.blue,
                       radius: 80,
                       titleStyle: const TextStyle(
@@ -1882,8 +1889,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                     PieChartSectionData(
                       value: totalInterest,
                       title:
-                          Tr.loan.interest.tr() +
-                          '\n${formatCurrency(totalInterest)}',
+                          '${Tr.loan.interest.tr()}\n${formatCurrency(totalInterest)}',
                       color: Colors.orange,
                       radius: 80,
                       titleStyle: const TextStyle(

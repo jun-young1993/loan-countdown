@@ -833,7 +833,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
               Text(
-                '${loan.term}${Tr.loan.months.tr()}',
+                '${loan.term}${Tr.loan.months.tr(namedArgs: {'month': ''})}',
                 style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
             ],

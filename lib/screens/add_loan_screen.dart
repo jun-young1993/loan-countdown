@@ -251,7 +251,11 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                                 items: [
                                   DropdownMenuItem(
                                     value: false,
-                                    child: Text(Tr.loan.months.tr()),
+                                    child: Text(
+                                      Tr.loan.months.tr(
+                                        namedArgs: {'month': ''},
+                                      ),
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: true,
@@ -428,7 +432,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
 
   Widget _buildRepaymentTypeSelector() {
     return DropdownButtonFormField<RepaymentType>(
-      value: _selectedRepaymentType,
+      initialValue: _selectedRepaymentType,
       decoration: InputDecoration(
         labelText: Tr.loan.repaymentMethod.tr(),
         border: OutlineInputBorder(),
@@ -479,7 +483,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: DropdownButtonFormField<int>(
-                  value: _paymentDayController.text.isNotEmpty
+                  initialValue: _paymentDayController.text.isNotEmpty
                       ? int.parse(_paymentDayController.text)
                       : null,
                   decoration: InputDecoration(
