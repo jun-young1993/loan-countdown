@@ -432,7 +432,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
 
   Widget _buildRepaymentTypeSelector() {
     return DropdownButtonFormField<RepaymentType>(
-      initialValue: _selectedRepaymentType,
+      value: _selectedRepaymentType,
       decoration: InputDecoration(
         labelText: Tr.loan.repaymentMethod.tr(),
         border: OutlineInputBorder(),
@@ -483,7 +483,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: DropdownButtonFormField<int>(
-                  initialValue: _paymentDayController.text.isNotEmpty
+                  value: _paymentDayController.text.isNotEmpty
                       ? int.parse(_paymentDayController.text)
                       : null,
                   decoration: InputDecoration(

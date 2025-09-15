@@ -91,7 +91,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 1);
     _paymentSchedulePageBloc?.add(ClearPaymentSchedule());
     _paymentScheduleBloc?.add(GetPaymentStatus());
     _loanSummeryBloc?.add(GetLoanSummery(widget.loan.id));
@@ -141,29 +141,36 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                   // 상환 상태 필터
                   Row(
                     children: [
-                      const Text('상환 상태: '),
+                      Text('${Tr.loan.repaymentStatus.tr()} :'),
                       const SizedBox(width: 8),
                       Expanded(
                         child: DropdownButton<String>(
                           isExpanded: true,
                           value: selectedPaymentStatus,
-                          hint: const Text('상환 상태 선택'),
+                          hint: Text(
+                            Tr.loan.repaymentStatus.tr() +
+                                Tr.common.select.tr(),
+                          ),
                           items: [
-                             DropdownMenuItem(
+                            DropdownMenuItem(
                               value: null,
                               child: Text(Tr.common.all.tr()),
                             ),
-                            const DropdownMenuItem(
+                            DropdownMenuItem(
+                              value: 'PENDING',
+                              child: Text(Tr.loan.waiting.tr()),
+                            ),
+                            DropdownMenuItem(
                               value: 'PAID',
-                              child: Text('상환 완료'),
+                              child: Text(Tr.loan.repaymentComplete.tr()),
                             ),
-                            const DropdownMenuItem(
+                            DropdownMenuItem(
                               value: 'UNPAID',
-                              child: Text('미상환'),
+                              child: Text(Tr.loan.repaymentNotYet.tr()),
                             ),
-                            const DropdownMenuItem(
+                            DropdownMenuItem(
                               value: 'OVERDUE',
-                              child: Text('연체'),
+                              child: Text(Tr.loan.repaymentOverdue.tr()),
                             ),
                           ],
                           onChanged: (String? value) {
@@ -175,39 +182,43 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  // 월별 필터
-                  Row(
-                    children: [
-                      const Text('월별 필터: '),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: selectedMonth,
-                          hint: const Text('월 선택'),
-                          items: [
-                            const DropdownMenuItem(
-                              value: null,
-                              child: Text('전체'),
-                            ),
-                            ...List.generate(12, (index) {
-                              final month = index + 1;
-                              return DropdownMenuItem(
-                                value: month.toString(),
-                                child: Text('$month월'),
-                              );
-                            }),
-                          ],
-                          onChanged: (String? value) {
-                            setDialogState(() {
-                              selectedMonth = value;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                  // const SizedBox(height: 16),
+                  // // 월별 필터
+                  // Row(
+                  //   children: [
+                  //     Text('${Tr.common.monthly.tr()} :'),
+                  //     const SizedBox(width: 8),
+                  //     Expanded(
+                  //       child: DropdownButton<String>(
+                  //         isExpanded: true,
+                  //         value: selectedMonth,
+                  //         hint: Text(Tr.common.select.tr()),
+                  //         items: [
+                  //           DropdownMenuItem(
+                  //             value: null,
+                  //             child: Text(Tr.common.all.tr()),
+                  //           ),
+                  //           ...List.generate(12, (index) {
+                  //             final month = index + 1;
+                  //             return DropdownMenuItem(
+                  //               value: month.toString(),
+                  //               child: Text(
+                  //                 Tr.loan.month.tr(
+                  //                   namedArgs: {'month': month.toString()},
+                  //                 ),
+                  //               ),
+                  //             );
+                  //           }),
+                  //         ],
+                  //         onChanged: (String? value) {
+                  //           setDialogState(() {
+                  //             selectedMonth = value;
+                  //           });
+                  //         },
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
               actions: [
@@ -215,7 +226,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('취소'),
+                  child: Text(Tr.loan.cancel.tr()),
                 ),
                 TextButton(
                   onPressed: () {
@@ -230,9 +241,12 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                         );
                       }
                     });
+                    _paymentSchedulePageBloc?.add(
+                      ChangeFilter(status: selectedPaymentStatus),
+                    );
                     Navigator.of(context).pop();
                   },
-                  child: const Text('적용'),
+                  child: Text(Tr.common.apply.tr()),
                 ),
                 TextButton(
                   onPressed: () {
@@ -241,7 +255,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
                       selectedMonth = null;
                     });
                   },
-                  child: const Text('초기화'),
+                  child: Text(Tr.common.reset.tr()),
                 ),
               ],
             );
@@ -391,9 +405,9 @@ class _LoanDetailScreenState extends State<LoanDetailScreen>
               const SizedBox(width: 8),
               Text(
                 Tr.loan.deleteLoanSuccess.tr(
-                namedArgs: {'name': widget.loan.name},
+                  namedArgs: {'name': widget.loan.name},
+                ),
               ),
-              
             ],
           ),
           backgroundColor: Colors.green[600],
